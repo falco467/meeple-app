@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte'
   import { flip } from 'svelte/animate'
   import { gameList } from '../js/gameListStore.js'
+  import { userList } from '../js/userStore.js';
   import GameBox from './gameBox.svelte'
 
   /** @type {string} */
@@ -9,14 +10,19 @@
 
   let errText = ''
 
-  const unsubscribe = gameList.load(err => { errText = `${err}` })
-  onDestroy(() => unsubscribe())
+  const unsubUsers = userList.load(err => { errText = `${err}` })
+  const unsubGame = gameList.load(err => { errText = `${err}` })
+  
+  onDestroy(() => {
+    unsubUsers()
+    unsubGame()
+  })
 
 </script>
 
 <main class="flex flex-col gap-1">
   {#each $gameList as game (game.gid)}
-    <div animate:flip>
+    <div animate:flip={{duration: 200}}>
       <GameBox {game} {uid} />
     </div>
   {/each}

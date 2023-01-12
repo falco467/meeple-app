@@ -40,7 +40,7 @@ export async function setUsername (uid, name) {
 
 /** @param {(v:GameMap) => void} listener @param {(err: Error) => void} errCallback */
 export function listenGames (listener, errCallback) {
-  return onValue(ref(db, 'games_test'), snap => listener(snap.val()), errCallback)
+  return onValue(ref(db, 'games'), snap => listener(snap.val()), errCallback)
 }
 
 /** @param {Game} game */

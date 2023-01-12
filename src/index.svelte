@@ -15,9 +15,6 @@
   }
 
   let errText = ''
-
-  const unsubscribe = userList.load(err => { errText = `${err}` })
-  onDestroy(() => unsubscribe())
 </script>
 
 <header class="fixed z-10 inset-0 bottom-auto h-14 flex flex-col

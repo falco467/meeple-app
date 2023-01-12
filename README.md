@@ -17,6 +17,7 @@ Tailwind (Utility CSS Styling) and Firebase (Hosting, Database, Cloud Functions)
 ├─ src/                # Code:
 │  ├─ components/        # Svelte Components
 │  ├─ js/                # Supporting JS code modules
+│  │  └─ firebaseConfig.js # This file needs to be created with your firebase configuration
 │  ├─ pages/             # Index Page for Astro
 │  └─ index.svelte       # Primary routing component
 ├─ .eslintrc           # Linting with JS Standard Style and Svelte
