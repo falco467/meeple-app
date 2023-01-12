@@ -1,0 +1,23 @@
+---
+import Index from '../index.svelte';
+---
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="favicon.ico" />
+    <link rel="manifest" href="site.webmanifest" />
+    <meta name="generator" content={Astro.generator} />
+    <script is:inline>
+      navigator?.serviceWorker?.register('./serviceWorker.js')
+    </script>
+    <title>Meeple App</title>
+    
+  </head>
+  <body class="flex flex-col gap-3 bg-slate-700 text-slate-300 font-sans p-3">
+
+    <Index client:only/>
+
+  </body>
+</html>

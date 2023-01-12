@@ -1,0 +1,23 @@
+{
+  "rules": {
+    ".read": "auth.uid !== null",
+    "games": {
+      ".write": "auth.uid !== null",
+      "$game": {
+        ".validate": "newData.hasChild('gid')",
+        "gid": {
+          ".validate": "$game === newData.val()"
+        }
+      }
+    },
+    "users": {
+      "$user_id": {
+        ".write": "auth.uid === $user_id",
+        ".validate": "newData.hasChild('name')",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 12"
+        }
+      }
+    }
+  }
+}
