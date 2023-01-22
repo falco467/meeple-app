@@ -1,13 +1,18 @@
 <script>
   import { onDestroy } from 'svelte'
-  import AddModal from './components/addModal.svelte'
-  import GameList from './components/gameList.svelte'
+  import { getErrorMessage } from './js/helpers.js'
+  import { userList } from './js/userStore.js'
+  import { getLogin } from './js/firedb.js'
+  import AddEventModal from './components/events/addEventModal.svelte'
+  import AddGameModal from './components/games/addGameModal.svelte'
+  import EventList from './components/events/eventList.svelte'
+  import GameList from './components/games/gameList.svelte'
   import Icon from './components/icon.svelte'
   import Login from './components/login.svelte'
-  import { getLogin, onEnter } from './js/helpers.js'
-  import { userList } from './js/userStore.js'
 
-  let userPromise = getLogin()
+  /** @type {'game'|'events'} */
+  export let kind = 'game'
+
   let isAddModalVisible = false
 
   function toggleAddModal () {
@@ -15,6 +20,22 @@
   }
 
   let errText = ''
+  let userPromise = getLogin()
+
+  let unsubUsers = loadUsers()
+  onDestroy(() => unsubUsers())
+
+  function loadUsers () {
+    errText = ''
+    return userList.load(err => { errText = getErrorMessage(err) })
+  }
+
+  function onLogin () {
+    userPromise = getLogin()
+    if (errText) {
+      unsubUsers = loadUsers()
+    }
+  }
 </script>
 
 <header class="fixed z-10 inset-0 bottom-auto h-14 flex flex-col
@@ -28,27 +49,28 @@
 
 <div class="mb-10"></div>
 
-{#if errText}<span class="text-red-500">{errText}</span>{/if}
-
 {#await userPromise}
   <div class="flex-grow text-center">Loading...</div>
 
 {:then uid}
+  {#if errText}<span class="text-red-500">{errText}</span>{/if}
+
   <div class="fixed z-10 flex items-center gap-1 top-3 left-3 rounded border pl-1 pr-2 py-1 shadow">
     <Icon i="user" title="User logged in as"/>
     {$userList?.[uid]?.name || '***'}
   </div>
   <button class="fixed z-10 flex items-center gap-1 top-3 right-3 rounded border pl-1 pr-2 py-1 shadow"
-    on:click={toggleAddModal} on:keyup={onEnter(toggleAddModal)}>
-    <Icon i="plus" title="Add"/>Game
+    on:click={toggleAddModal}>
+    <Icon i="plus" title="Add"/>{kind === 'game' ? 'Game' : 'Event'}
   </button>
 
   {#if isAddModalVisible}
-    <AddModal on:close={ () => { isAddModalVisible = false }} />
+    <svelte:component this={kind === 'game' ? AddGameModal : AddEventModal} {uid}
+      on:close={ () => { isAddModalVisible = false }} />
   {:else}
-    <GameList {uid} />
+    <svelte:component this={kind === 'game' ? GameList : EventList} {uid} />
   {/if}
 
 {:catch}
-  <Login on:login={() => { userPromise = getLogin() }}/>
+  <Login on:login={onLogin}/>
 {/await}

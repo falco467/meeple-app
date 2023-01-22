@@ -1,48 +1,8 @@
-import { initializeApp } from 'firebase/app'
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check'
-import { getFunctions, httpsCallable } from 'firebase/functions'
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth'
-import { setUsername } from './firedb.js'
-import { firebaseConfig } from './firebaseConfig.js'
-
-
-export const app = initializeApp(firebaseConfig)
-
-initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('6Ld5yeIjAAAAAAWy-JqWV4ObHjP5AUAdWsGToDWB'),
-  isTokenAutoRefreshEnabled: true
-})
-
-const auth = getAuth(app)
-
-export async function getLogin () {
-  /** @type {import('firebase/auth').User} */
-  const user = await new Promise((resolve, reject) => {
-    onAuthStateChanged(auth, user => {
-      if (user) resolve(user)
-      else reject(new Error('Not logged in'))
-    })
-  })
-  return user.uid
-}
-
-/** @param {() => void} f */
-export const onEnter = (f) => (/** @type {KeyboardEvent} */ e) => e.key === 'Enter' && f()
-
-/** @param {string} email @param {string} password */
-export async function login (email, password) {
-  return await signInWithEmailAndPassword(auth, email, password)
-}
-
-/** @param {string} email @param {string} password @param {string} name */
-export async function createAccount (email, password, name) {
-  const cred = await createUserWithEmailAndPassword(auth, email, password)
-  await setUsername(cred.user.uid, name)
-  return cred
-}
-
 /** @param {*} err */
 export function getErrorMessage (err) {
+  if (err?.code === 'PERMISSION_DENIED') {
+    return "You don't have permission for this."
+  }
   if (err?.code === 'auth/user-not-found') {
     return 'E-Mail address not found'
   }
@@ -56,113 +16,59 @@ export function getErrorMessage (err) {
   return err?.message ?? `${err}`
 }
 
-const functions = getFunctions(app, 'europe-west1')
-const bggSearchGameFunc = httpsCallable(functions, 'bggSearchGame')
-
-/** @typedef {{id: string, name: string, year: string}} SearchResult */
-
-/** @param {string} name @returns {Promise<SearchResult[]>} */
-export async function bggSearchGame (name) {
-  const result = /** @type {{ok: boolean, status: number, text: string}} */
-    ((await bggSearchGameFunc({ name })).data)
-  if (!result.ok) {
-    throw new Error(`Error calling BGG Search (${result.status}): ${result.text}`)
-  }
-
-  const searchXML = new window.DOMParser().parseFromString(result.text, 'text/xml')
-  const list = Array.from(searchXML.querySelectorAll('item')).map(node => ({
-    id: node.id,
-    name: node.querySelector('name')?.getAttribute('value') || '',
-    year: node.querySelector('yearpublished')?.getAttribute('value') || ''
-  }))
-  list.sort((a, b) => {
-    const aMatch = a.name.toLowerCase().includes(name.toLowerCase())
-    const bMatch = b.name.toLowerCase().includes(name.toLowerCase())
-    if (aMatch !== bMatch) return aMatch ? -1 : 1
-    return getSortString(a).localeCompare(getSortString(b))
-  })
-
-  return list.slice(0, 10)
+/** @param {Date} d */
+export function toISODay (d) {
+  return d.toISOString().substring(0, 10)
 }
 
-/** @param {string} id @returns {Promise<import('./firedb.js').Game>} */
-export async function bggLoadGame (id) {
-  const result = /** @type {{ok: boolean, status: number, text: string}} */
-    ((await bggSearchGameFunc({ id })).data)
-  if (!result.ok) {
-    throw new Error(`Error calling BGG Load (${result.status}): ${result.text}`)
-  }
-
-  const searchXML = new window.DOMParser().parseFromString(result.text, 'text/xml')
-
-  const it = searchXML.querySelector('item')
-  const name = getValue(it, 'name')
-  const pic = it?.querySelector('thumbnail')?.textContent || ''
-  const players = `${getValue(it, 'minplayers')}-${getValue(it, 'maxplayers')}`
-  const rating = parseFloat(getValue(it, 'average')).toFixed(1)
-  const recPlayers = calculateRecommendedPlayers(it)
-
-  const g = {
-    gid: id,
-    name,
-    pic,
-    players,
-    rating,
-    recPlayers,
-    votes: {}
-  }
-
-  return g
+/** @param {Date} d @param {string} field @param {string} variation */
+export function getDate (d, field, variation = 'short') {
+  return d.toLocaleString('default', { [field]: variation })
 }
 
-/** @param {Element?} it */
-function calculateRecommendedPlayers (it) {
-  const npRatings = Array.from(
-    it?.querySelectorAll('poll[name="suggested_numplayers"] results') || [])
-    .map(n => ({
-      num: n.getAttribute('numplayers') || '',
-      best: getVoteCount(n, 'Best'),
-      rec: getVoteCount(n, 'Recommended'),
-      not: getVoteCount(n, 'Not Recommended')
-    }))
-
-  /** @type {string[]} */
-  const recPlayerList = []
-  npRatings.forEach(r => (r.best > r.not || (r.best + r.rec) > 3 * r.not) && recPlayerList.push(r.num))
-  recPlayerList.sort()
-
-  let recPlayers = ''
-  let lastN = ''
-  let span = false
-  for (const n of recPlayerList) {
-    if (!recPlayers) {
-      recPlayers = n
-    } else if (parseInt(n) === parseInt(lastN) + 1 || n === `${lastN}+`) {
-      span = true
-    } else {
-      recPlayers += span ? `-${lastN},${n}` : `,${n}`
-      span = false
+/** @param {import('./firedb.js').Event['days']} days */
+export function getDayList (days) {
+  const dl = Object.entries(days).map(([date, times]) => {
+    const d = new Date(date)
+    return {
+      date,
+      times,
+      month: getDate(d, 'month'),
+      weekday: getDate(d, 'weekday').toUpperCase(),
+      dom: getDate(d, 'day', 'numeric')
     }
-    lastN = n
+  })
+  dl.sort((a, b) => a.date.localeCompare(b.date))
+  return dl
+}
+
+/** @param {object} o */
+export function isEmpty (o) {
+  return Object.keys(o || {}).length === 0
+}
+
+/** @param {object} o */
+export function hasAny (o) {
+  return Object.keys(o || {}).length > 0
+}
+
+/** @param {() => void} f */
+export const onEnter = (f) => (/** @type {KeyboardEvent} */ e) => e.key === 'Enter' && f()
+
+/** @param {import('./firedb.js').Event} event */
+export async function shareEvent (event) {
+  const baseURL = window.location.href.split('#')[0]
+  const creator = encodeURIComponent(event.creator)
+  const name = encodeURIComponent(event.name.replaceAll(' ', '_'))
+  const url = `${baseURL}#${event.id}:${creator}:${name}`
+  const shareData = {
+    title: 'Meeple Event',
+    text: `${event.creator}: ${event.name}`,
+    url
   }
-  if (span) {
-    recPlayers += `-${lastN}`
+  if (navigator.canShare(shareData)) {
+    await navigator.share(shareData)
+  } else {
+    navigator.clipboard.writeText(url)
   }
-  return recPlayers
-}
-
-/** @param {Element?} node @param {string} name */
-function getVoteCount (node, name) {
-  const vt = node?.querySelector(`result[value="${name}"]`)?.getAttribute('numvotes')
-  return vt ? parseInt(vt) : 0
-}
-
-/** @param {Element?} it @param {string} tag */
-function getValue (it, tag) {
-  return it?.querySelector(tag)?.getAttribute('value') || ''
-}
-
-/** @param {{id: string, name: string, year: string}} r */
-function getSortString (r) {
-  return `${String(r.name.length).padStart(2, '0')}${10000 - parseInt(r.year)}  ${r.name}`
 }

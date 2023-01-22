@@ -1,9 +1,9 @@
 {
   "rules": {
-    ".read": "auth.uid !== null",
+    ".read": "auth.uid !== null && root.child('users').child(auth.uid).child('verified').val() === true",
     "games": {
-      ".write": "auth.uid !== null",
       "$game": {
+        ".write": "auth.uid !== null && root.child('users').child(auth.uid).child('verified').val() === true",
         ".validate": "newData.hasChild('gid')",
         "gid": {
           ".validate": "$game === newData.val()"
@@ -12,10 +12,18 @@
     },
     "users": {
       "$user_id": {
-        ".write": "auth.uid === $user_id",
-        ".validate": "newData.hasChild('name')",
         "name": {
+          ".write": "auth.uid === $user_id",
           ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 12"
+        }
+      }
+    },
+    "events": {
+      "$event": {
+        ".write": "auth.uid !== null && root.child('users').child(auth.uid).child('verified').val() === true",
+        ".validate": "newData.hasChild('id')",
+        "id": {
+          ".validate": "$event === newData.val()"
         }
       }
     }

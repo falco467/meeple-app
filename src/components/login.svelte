@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { createAccount, getErrorMessage, login, onEnter } from '../js/helpers.js'
+  import { createAccount, login } from '../js/firedb.js'
+  import { getErrorMessage, onEnter } from '../js/helpers.js'
   import Icon from './icon.svelte'
 
   /** @type {HTMLInputElement} */
@@ -54,26 +55,26 @@
   }
 </script>
 
-<div class="flex flex-col gap-5 items-center mt-5">
+<div class="w-56 flex flex-col gap-5 items-stretch mt-5 self-center">
   <input bind:this={inputEmail} type="email" autocomplete="email" placeholder="email"
-    required minlength="8" class="w-56 bg-slate-500 rounded p-2"/>
+    required minlength="8" class="bg-slate-500 rounded p-2"/>
   <input bind:this={inputPassword} type="password" autocomplete="current-password" placeholder="password"
-    required minlength="8" class="w-56 bg-slate-500 rounded p-2" on:keyup={onEnter(tryLogin)}/>
+    required minlength="8" class="bg-slate-500 rounded p-2" on:keyup={onEnter(tryLogin)}/>
 
   {#if errText}<span class="text-red-500">{errText}</span>{/if}
 
   {#if !confirmCreation}
-  <button class="w-56 bg-slate-800 rounded px-5 py-3" on:click={tryLogin} on:keyup={onEnter(tryLogin)}>
+  <button class="bg-slate-800 rounded px-5 py-3" on:click={tryLogin}>
     {#if loading}<Icon i="cube" class="animate-spin" />{:else}Login{/if}
   </button>
-  <button class="w-56 bg-sky-800 rounded px-5 py-3" on:click={() => { confirmCreation = true }}>
+  <button class="bg-sky-800 rounded px-5 py-3" on:click={() => { confirmCreation = true }}>
     Create Account
   </button>
 
   {:else}
   <input bind:this={inputName} type="text" autocomplete="given-name" placeholder="display name"
-    required minlength="2" maxlength="12" class="w-56 bg-slate-500 rounded p-2"/>
-  <button class="w-56 bg-sky-800 rounded px-5 py-3" on:click={tryCreateAccount}>
+    required minlength="2" maxlength="12" class="bg-slate-500 rounded p-2"/>
+  <button class="bg-sky-800 rounded px-5 py-3" on:click={tryCreateAccount}>
     {#if loading}<Icon i="cube" class="animate-spin" />{:else}Confirm Creation{/if}
   </button>
   {/if}

@@ -1,21 +1,22 @@
 <script>
   import { scale } from 'svelte/transition'
-  import { addVote, removeVote } from '../js/firedb.js'
-  import { onEnter } from '../js/helpers.js'
-  import { userList } from '../js/userStore.js'
-  import Icon from './icon.svelte'
+  import { addVote, removeVote } from '../../js/firedb.js'
+  import { userList } from '../../js/userStore.js'
+  import Icon from '../icon.svelte'
 
   /** @type {string} */
   export let uid
-  /** @type {import('../js/firedb.js').Game} */
+  /** @type {import('../../js/firedb.js').Game} */
   export let game
 
-  /** @param {import('../js/firedb.js').Game} game */
+  export let preview = false
+
+  /** @param {import('../../js/firedb.js').Game} game */
   function hasMyVote (game) {
     return Object.keys(game.votes).includes(uid)
   }
 
-  /** @param {import('../js/firedb.js').Game} game */
+  /** @param {import('../../js/firedb.js').Game} game */
   function toggleVote (game) {
     if (hasMyVote(game)) {
       removeVote(game.gid, uid)
@@ -26,9 +27,10 @@
 </script>
 
 <article class="flex gap-2 bg-slate-800 rounded p-2">
-  <section class="flex w-20 rounded overflow-hidden flex-shrink-0 self-start">
+  <a class="flex w-20 rounded overflow-hidden flex-shrink-0 self-start"
+    href={`https://boardgamegeek.com/boardgame/${game.gid}`} target="_blank" rel="noreferrer">
     <img alt="cover" src={game.pic}>
-  </section>
+  </a>
 
   <section class="flex flex-col gap-1 flex-grow min-w-0">
     <h2 class="overflow-hidden text-ellipsis whitespace-nowrap">{game.name}</h2>
@@ -53,11 +55,11 @@
       <span>{game.recPlayers}</span>
     </di>
     <div class="flex-grow"></div>
-    <button class=""
-      on:click={() => toggleVote(game)}
-      on:keyup={onEnter(() => toggleVote(game))}>
-      <Icon i="thumbs-up" class="!w-8 !h-8" stroke={1.5}
-        fill={hasMyVote(game) ? 'rgb(100, 116, 139)' : 'none'}/>
-    </button>
+    {#if !preview}
+      <button on:click={() => toggleVote(game)}>
+        <Icon i="thumbs-up" class="!w-8 !h-8" stroke={1.5}
+          fill={hasMyVote(game) ? 'rgb(100, 116, 139)' : 'none'}/>
+      </button>
+    {/if}
   </section>
 </article>
