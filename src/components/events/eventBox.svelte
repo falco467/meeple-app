@@ -21,7 +21,7 @@
   /** @param {string} voter */
   function hasAnyVotes (voter) {
     return Object.values(event.days).some(
-      d => Object.values(d).some(t => t.votes[voter]))
+      d => Object.values(d).some(t => t.votes?.[voter]))
   }
 
   /** @param {typeof event} _eventForReactivity */
@@ -85,7 +85,7 @@
       {$userList[event.creator]?.name || '***'}: {event.name}
     </h2>
     <div class="flex-grow"></div>
-    <button class="p-2 rounded border" on:click={() => shareEvent(event)}>
+    <button class="p-2 rounded border" on:click={() => shareEvent(event, $userList)}>
       <Icon i="share" stroke={2} class="!w-4 !h-4"/>
     </button>
     <button class="px-2 p-1 rounded border" on:click={() => dispatch('open')}>

@@ -102,7 +102,7 @@
     </h2>
     <div class="flex-grow"></div>
     {#if !editing}
-      <button class="p-2 rounded border" on:click={() => shareEvent(event)}>
+      <button class="p-2 rounded border" on:click={() => shareEvent(event, $userList)}>
         <Icon i="share" stroke={2} class="!w-4 !h-4"/>
       </button>
       <button class="px-2 p-1 rounded border" on:click={() => dispatch('close')}>
