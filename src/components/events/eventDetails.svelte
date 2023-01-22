@@ -97,8 +97,8 @@
 
 <article use:scrollOnMount class="flex flex-col gap-2 bg-slate-800 rounded p-2" class:border={!event.lastVoted[uid]}>
   <div class="flex items-center gap-1">
-    <h2 class="overflow-hidden text-ellipsis whitespace-nowrap">
-      {$userList[event.creator].name}: {event.name}
+    <h2 class="overflow-hidden text-ellipsis whitespace-nowrap text-xl">
+      {$userList[event.creator]?.name || '***'}: {event.name}
     </h2>
     <div class="flex-grow"></div>
     {#if !editing}
@@ -109,6 +109,13 @@
         Close
       </button>
     {/if}
+  </div>
+
+  <div class="flex items-center gap-1">
+    Please vote:
+    <Icon i="thumbs-up" class="ml-2" stroke={2} />ok
+    <Icon i="star" class="ml-2" stroke={2} />favorite
+    <Icon i="home" class="ml-2" stroke={2} />you can host
   </div>
 
   {#each getDayList(event.days) as day (day.date)}

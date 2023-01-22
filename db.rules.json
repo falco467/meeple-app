@@ -1,9 +1,9 @@
 {
   "rules": {
-    ".read": "auth.uid !== null && root.child('users').child(auth.uid).child('verified').val() === true",
+    ".read": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true",
     "games": {
       "$game": {
-        ".write": "auth.uid !== null && root.child('users').child(auth.uid).child('verified').val() === true",
+        ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true",
         ".validate": "newData.hasChild('gid')",
         "gid": {
           ".validate": "$game === newData.val()"
@@ -13,17 +13,36 @@
     "users": {
       "$user_id": {
         "name": {
-          ".write": "auth.uid === $user_id",
+          ".write": "auth !== null && auth.uid === $user_id",
           ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 12"
         }
       }
     },
     "events": {
       "$event": {
-        ".write": "auth.uid !== null && root.child('users').child(auth.uid).child('verified').val() === true",
-        ".validate": "newData.hasChild('id')",
+        ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true && (data.child('creator').val() === auth.uid || newData.child('creator').val() === auth.uid)",
+        ".validate": "newData.hasChildren(['id','creator'])",
         "id": {
           ".validate": "$event === newData.val()"
+        },
+        "creator": {
+          ".validate": "!data.exists()"
+        },
+        "lastVoted": {
+          "$voter": {
+            ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true && $voter === auth.uid",
+          }
+        },
+        "days": {
+          "$day": {
+            "$time": {
+              "votes": {
+                "$voter": {
+                  ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true && $voter === auth.uid",
+                }
+              }
+            }
+          }
         }
       }
     }

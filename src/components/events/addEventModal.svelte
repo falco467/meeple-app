@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from 'svelte'
   import { addEvent } from '../../js/firedb.js'
-  import { getErrorMessage, hasAny } from '../../js/helpers.js'
+  import { getErrorMessage } from '../../js/helpers.js'
   import Icon from '../icon.svelte'
   import CalendarBox from './calendarBox.svelte'
   import EventDetails from './eventDetails.svelte'
@@ -95,14 +95,6 @@
     required minlength="4" maxlength="30" class="bg-slate-500 rounded p-2"/>
 
   <CalendarBox bind:event {uid} />
-
-  {#if hasAny(event.days)}
-  <span class="-mb-3 flex items-center gap-1">
-    Please vote:
-    <Icon i="thumbs-up" class="ml-2" stroke={2} />ok
-    <Icon i="star" class="ml-2" stroke={2} />favorite
-    <Icon i="home" class="ml-2" stroke={2} />you can host</span>
-  {/if}
 
   <EventDetails bind:event {uid} editing
     on:removeTime={e => removeTime(e.detail.day, e.detail.time)}
