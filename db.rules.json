@@ -30,7 +30,7 @@
         },
         "lastVoted": {
           "$voter": {
-            ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true && $voter === auth.uid",
+            ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true && $voter === auth.uid"
           }
         },
         "days": {
@@ -38,7 +38,7 @@
             "$time": {
               "votes": {
                 "$voter": {
-                  ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true && $voter === auth.uid",
+                  ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true && $voter === auth.uid"
                 }
               }
             }
