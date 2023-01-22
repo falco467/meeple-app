@@ -28,7 +28,7 @@
         "value": "max-age=86400"
       } ]
     }, {
-      "source": "@(index.html|site.webmanifest)",
+      "source": "@(index.html|events.html|site.webmanifest)",
       "headers": [ {
         "key": "Cache-Control",
         "value": "max-age=60"

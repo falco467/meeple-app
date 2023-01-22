@@ -9,6 +9,9 @@ export default defineConfig({
   integrations: [tailwind(), svelte()],
   base: '/',
   outDir: 'dist',
+  build: {
+    format: 'file'
+  },
   vite: {
     server: {
       https: {
