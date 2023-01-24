@@ -19,6 +19,7 @@
     errText = ''
     try {
       await removeEvent(eventID)
+      selectedEvent = null
     } catch (err) {
       errText = getErrorMessage(err)
     }
@@ -28,15 +29,15 @@
   onDestroy(unsubEvents)
 </script>
 
-<main class="flex flex-col gap-1 mb-10">
+<main class="flex flex-col gap-2 mb-10">
   {#if errText}<span class="text-red-500">{errText}</span>{/if}
 
   {#each $eventList as event (event.id)}
-    <div animate:flip={{ duration: (dist) => dist }}>
+    <div animate:flip={{ duration: 200 }}>
       {#if selectedEvent === event.id}
         <EventDetails {event} {uid} on:close={() => { selectedEvent = null }}
           on:remove={() => tryDeleteEvent(event.id)}/>
-      {:else}
+      {:else if !selectedEvent}
         <EventBox {event} {uid} on:open={() => { selectedEvent = event.id }}/>
       {/if}
     </div>

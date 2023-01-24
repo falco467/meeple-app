@@ -72,3 +72,21 @@ export async function shareEvent (event, userList) {
     navigator.clipboard.writeText(url)
   }
 }
+
+/** @param {string} key */
+export function getSavedState (key) {
+  if (import.meta.env.SSR) return null
+  try {
+    const it = window.localStorage.getItem(key)
+    return it && JSON.parse(it)
+  } catch (err) {
+    console.error(err)
+    return null
+  }
+}
+
+/** @param {string} key @param {any} state */
+export function saveState (key, state) {
+  if (import.meta.env.SSR) return
+  window.localStorage.setItem(key, JSON.stringify(state))
+}

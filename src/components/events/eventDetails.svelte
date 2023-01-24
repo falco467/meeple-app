@@ -1,11 +1,9 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { removeEventVote, setEventFinalDate, setEventVote } from '../../js/firedb.js'
+  import { setEventFinalDate, setEventLastVoted, setEventVote } from '../../js/firedb.js'
   import { getDayList, getErrorMessage, shareEvent } from '../../js/helpers.js'
   import { userList } from '../../js/userStore.js'
   import Icon from '../icon.svelte'
-
-  // import { addEventVote, removeEventVote } from '../js/firedb.js'
 
   /** @type {string} */
   export let uid
@@ -44,6 +42,15 @@
     }
   }
 
+  async function trySetNotAttending () {
+    errText = ''
+    try {
+      await setEventLastVoted(event.id, uid)
+    } catch (err) {
+      errText = getErrorMessage(err)
+    }
+  }
+
   /** @param {string} day @param {string} time @param {import('../../js/firedb.js').EventVote} vote */
   async function setVote (day, time, vote) {
     if (editing) {
@@ -59,7 +66,7 @@
       delete event.days[day][time].votes[uid]
       event = event
     } else {
-      await removeEventVote(event.id, day, time, uid)
+      await setEventVote(event.id, day, time, uid, null)
     }
   }
 
@@ -86,16 +93,9 @@
   function isSelected (day, time) {
     return event.selectedDay === day && event.selectedTime === time
   }
-
-  /** @param {HTMLElement} el */
-  function scrollOnMount (el) {
-    if (!editing && el.parentElement) {
-      window.scrollTo(0, el.parentElement.offsetTop - 60)
-    }
-  }
 </script>
 
-<article use:scrollOnMount class="flex flex-col gap-2 bg-slate-800 rounded p-2" class:border={!event.lastVoted[uid]}>
+<article class="flex flex-col gap-2 bg-slate-800 rounded p-2" class:border={!event.lastVoted[uid]}>
   <div class="flex items-center gap-1">
     <h2 class="overflow-hidden text-ellipsis whitespace-nowrap text-xl">
       {$userList[event.creator]?.name || '***'}: {event.name}
@@ -219,6 +219,13 @@
         </button>
       </div>
     {/if}
+  {:else if !editing && !event.lastVoted[uid]}
+  <div class="flex gap-5">
+    <div class="flex-grow"></div>
+    <button class="rounded border p-1 px-2" on:click={trySetNotAttending}>
+      Mark as not attending
+    </button>
+  </div>
   {/if}
 
   {#if deleteModalVisible}

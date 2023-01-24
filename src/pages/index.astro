@@ -3,5 +3,5 @@ import Index from '../index.svelte'
 import BasicPage from '../basicPage.astro'
 ---
 <BasicPage title="Meeple App">
-  <Index client:only kind="game"/>
+  <Index client:load kind="game"/>
 </BasicPage>

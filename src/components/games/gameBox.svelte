@@ -29,7 +29,11 @@
 <article class="flex gap-2 bg-slate-800 rounded p-2">
   <a class="flex w-20 rounded overflow-hidden flex-shrink-0 self-start"
     href={`https://boardgamegeek.com/boardgame/${game.gid}`} target="_blank" rel="noreferrer">
-    <img alt="cover" src={game.pic}>
+    {#if game.pic}
+      <img alt="cover" src={game.pic}>
+    {:else}
+      <div class="w-20 h-20 bg-slate-900 animate-pulse"></div>
+    {/if}
   </a>
 
   <section class="flex flex-col gap-1 flex-grow min-w-0">

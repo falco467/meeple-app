@@ -4,17 +4,21 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, on
 import { getDatabase, onValue, push, ref, remove, set, update } from 'firebase/database'
 import { firebaseConfig } from './firebaseConfig.js'
 
-export const app = initializeApp(firebaseConfig)
+export const app = /** @type {ReturnType<initializeApp>} */ (import.meta.env.SSR || initializeApp(firebaseConfig))
 
-initializeAppCheck(app, {
+import.meta.env.SSR || initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider('6Ld5yeIjAAAAAAWy-JqWV4ObHjP5AUAdWsGToDWB'),
   isTokenAutoRefreshEnabled: true
 })
 
+const auth = /** @type {ReturnType<getAuth>} */ (import.meta.env.SSR || getAuth(app))
+const db = /** @type {ReturnType<getDatabase>} */ (import.meta.env.SSR || getDatabase(app))
+
 // #region Auth
-const auth = getAuth(app)
 
 export async function getLogin () {
+  if (import.meta.env.SSR) return '***'
+
   /** @type {import('firebase/auth').User} */
   const user = await new Promise((resolve, reject) => {
     onAuthStateChanged(auth, user => {
@@ -37,8 +41,6 @@ export async function createAccount (email, password, name) {
 }
 // #endregion
 
-const db = getDatabase(app)
-
 // #region User
 /** @typedef {{[id:string]:UserInfo}} UserMap */
 
@@ -49,6 +51,7 @@ const db = getDatabase(app)
 
 /** @param {(v:UserMap) => void} listener @param {(err: Error) => void} errCallback */
 export function listenUsers (listener, errCallback) {
+  if (import.meta.env.SSR) return () => {}
   return onValue(ref(db, 'users'), snap => listener(snap.val()), errCallback)
 }
 
@@ -79,6 +82,7 @@ export async function setUsername (uid, name) {
 
 /** @param {(v:GameMap) => void} listener @param {(err: Error) => void} errCallback */
 export function listenGames (listener, errCallback) {
+  if (import.meta.env.SSR) return () => {}
   return onValue(ref(db, 'games'), snap => listener(snap.val()), errCallback)
 }
 
@@ -140,14 +144,17 @@ export async function removeEvent (id) {
   await remove(ref(db, `events/${id}`))
 }
 
-/** @param {string} id @param {string} day @param {string} time @param {string} uid @param {EventVote} vote */
+/** @param {string} id @param {string} day @param {string} time @param {string} uid @param {EventVote?} vote */
 export async function setEventVote (id, day, time, uid, vote) {
-  await set(ref(db, `events/${id}/days/${day}/${time}/votes/${uid}`), vote)
+  await update(ref(db, `events/${id}`), {
+    [`days/${day}/${time}/votes/${uid}`]: vote,
+    [`lastVoted/${uid}`]: Date.now()
+  })
 }
 
-/** @param {string} id @param {string} day @param {string} time @param {string} uid */
-export async function removeEventVote (id, day, time, uid) {
-  await remove(ref(db, `events/${id}/days/${day}/${time}/votes/${uid}`))
+/** @param {string} id @param {string} uid  */
+export async function setEventLastVoted (id, uid) {
+  await set(ref(db, `events/${id}/lastVoted/${uid}`), Date.now())
 }
 
 /** @param {string} id @param {string} day @param {string} time */

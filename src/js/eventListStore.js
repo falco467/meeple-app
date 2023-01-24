@@ -1,11 +1,13 @@
 import { writable } from 'svelte/store'
 import { listenEvents } from './firedb.js'
-import { toISODay } from './helpers.js'
+import { getSavedState, saveState, toISODay } from './helpers.js'
 
 /** @typedef {import('./firedb.js').Event} Event */
 
+const storageKey = 'meeple:eventList'
+
 /** @type {Event[]} */
-const gl = []
+const gl = getSavedState(storageKey) || {}
 
 const { set, subscribe } = writable(gl)
 
@@ -23,6 +25,7 @@ export function load (errCallback) {
       (b.selectedDay || '').localeCompare(a.selectedDay || '') ||
       b.created - a.created)
     set(list)
+    saveState(storageKey, list)
   }, errCallback)
 }
 

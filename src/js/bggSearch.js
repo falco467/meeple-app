@@ -1,12 +1,13 @@
 import { app } from './firedb.js'
 import { getFunctions, httpsCallable } from 'firebase/functions'
 
-const functions = getFunctions(app, 'europe-west1')
+const functions = /** @type {ReturnType<getFunctions>} */ (import.meta.env.SSR || getFunctions(app, 'europe-west1'))
 
 /** @typedef {{name?: string, id?: string}} BggCallRequest */
 /** @typedef {{ok: boolean, status: number, text: string}} BggCallResult */
 
-const bggSearchGameFunc = /** @type {(r:BggCallRequest) => Promise<{data:BggCallResult}>} */ (httpsCallable(functions, 'bggSearchGame'))
+const bggSearchGameFunc = /** @type {(r:BggCallRequest) => Promise<{data:BggCallResult}>} */
+  (import.meta.env.SSR || httpsCallable(functions, 'bggSearchGame'))
 
 /** @typedef {{id: string, name: string, year: string}} SearchResult */
 
