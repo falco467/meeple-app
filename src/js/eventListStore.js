@@ -22,11 +22,16 @@ export function load (errCallback) {
     list.forEach(e => !e.days && (e.days = {}))
     list.sort((a, b) => (
       bToN(isEventOver(b)) - bToN(isEventOver(a))) ||
-      (b.selectedDay || '').localeCompare(a.selectedDay || '') ||
+      getDay(a).localeCompare(getDay(b)) ||
       b.created - a.created)
     set(list)
     saveState(storageKey, list)
   }, errCallback)
+}
+
+/** @param {Event} event */
+function getDay (event) {
+  return event.selectedDay || Object.keys(event.days).sort()[0]
 }
 
 /** @param {boolean} b */

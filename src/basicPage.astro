@@ -13,9 +13,6 @@ const { title } = Astro.props;
     <link rel="icon" href="favicon.ico" />
     <link rel="manifest" href="site.webmanifest" />
     <meta name="generator" content={Astro.generator} />
-    <script is:inline>
-      navigator?.serviceWorker?.register('./serviceWorker.js')
-    </script>
     <title>{title}</title>
     
   </head>

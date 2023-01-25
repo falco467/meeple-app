@@ -21,7 +21,8 @@ export async function getLogin () {
 
   /** @type {import('firebase/auth').User} */
   const user = await new Promise((resolve, reject) => {
-    onAuthStateChanged(auth, user => {
+    const unsub = onAuthStateChanged(auth, user => {
+      unsub()
       if (user) { resolve(user) } else { reject(new Error('Not logged in')) }
     })
   })
@@ -165,3 +166,13 @@ export async function setEventFinalDate (id, day, time) {
   })
 }
 // #endregion
+
+/** @param {string} token */
+export async function saveMessagingToken (token) {
+  try {
+    const uid = await getLogin()
+    await set(ref(db, `messaging/${uid}/tokens/${token}`), Date.now())
+  } catch (err) {
+    console.error(err)
+  }
+}

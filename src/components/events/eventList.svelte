@@ -4,6 +4,7 @@
   import { eventList } from '../../js/eventListStore.js'
   import { removeEvent } from '../../js/firedb.js'
   import { getErrorMessage } from '../../js/helpers.js'
+  import { enableMessaging, isMessagingActive } from '../../js/messaging.js'
   import Icon from '../icon.svelte'
   import EventBox from './eventBox.svelte'
   import EventDetails from './eventDetails.svelte'
@@ -13,6 +14,7 @@
 
   let errText = ''
   let selectedEvent = window.location.hash ? window.location.hash.split(/[#:]/)[1] : null
+  let msgActive = isMessagingActive()
 
   /** @param {string} eventID */
   async function tryDeleteEvent (eventID) {
@@ -25,12 +27,22 @@
     }
   }
 
+  async function tryEnableMessaging () {
+    msgActive = await enableMessaging()
+  }
+
   const unsubEvents = eventList.load(err => { errText = getErrorMessage(err) })
   onDestroy(unsubEvents)
 </script>
 
 <main class="flex flex-col gap-2 mb-10">
   {#if errText}<span class="text-red-500">{errText}</span>{/if}
+
+  {#if !msgActive}
+    <button class="rounded border p-1 px-2" on:click={tryEnableMessaging}>
+      Enable Notifications
+    </button>
+  {/if}
 
   {#each $eventList as event (event.id)}
     <div animate:flip={{ duration: 200 }}>

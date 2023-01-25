@@ -1,3 +1,8 @@
+// Service Worker for fetch and web push
+export const swRegistrationPromise = /** @type {Promise<ServiceWorkerRegistration>} */(
+  import.meta.env.SSR || window.navigator?.serviceWorker?.register('/serviceWorker.js', { type: 'module' })
+)
+
 /** @param {*} err */
 export function getErrorMessage (err) {
   if (err?.code === 'PERMISSION_DENIED') {

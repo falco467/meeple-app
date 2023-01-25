@@ -82,7 +82,7 @@
 <article class="flex flex-col gap-2 bg-slate-800 rounded p-2" class:border={!event.lastVoted[uid]}>
   <div class="flex items-center gap-1">
     <h2 class="overflow-hidden text-ellipsis whitespace-nowrap text-xl">
-      {$userList[event.creator]?.name || '***'}: {event.name}
+      {event.name}
     </h2>
     <div class="flex-grow"></div>
     <button class="p-2 rounded border" on:click={() => shareEvent(event, $userList)}>
