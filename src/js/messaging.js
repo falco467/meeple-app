@@ -1,7 +1,9 @@
 import { app, saveMessagingToken } from './firedb.js'
 import { getMessaging, getToken, onMessage } from 'firebase/messaging'
-import { vapidKey } from './firebaseConfig.js'
 import { swRegistrationPromise } from './helpers.js'
+
+// @ts-ignore fireBaseConfig has to be provided via public folder
+import { vapidKey } from '../firebaseConfig.js'
 
 const messaging = /** @type {ReturnType<getMessaging>} */ (import.meta.env.SSR || getMessaging(app))
 

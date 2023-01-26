@@ -1,7 +1,7 @@
 {
   "rules": {
-    ".read": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true",
     "games": {
+      ".read": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true",
       "$game": {
         ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true",
         ".validate": "newData.hasChild('gid')",
@@ -11,14 +11,23 @@
       }
     },
     "users": {
+      ".read": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true",
       "$user_id": {
+        ".read": "auth !== null && auth.uid === $user_id",
         "name": {
           ".write": "auth !== null && auth.uid === $user_id",
           ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 12"
         }
       }
     },
+    "messaging": {
+      "$user_id": {
+        ".read": "auth !== null && auth.uid === $user_id && root.child('users').child(auth.uid).child('verified').val() === true",
+        ".write": "auth !== null && auth.uid === $user_id && root.child('users').child(auth.uid).child('verified').val() === true"
+      }
+    },
     "events": {
+      ".read": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true",
       "$event": {
         ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true && (data.child('creator').val() === auth.uid || newData.child('creator').val() === auth.uid)",
         ".validate": "newData.hasChildren(['id','creator'])",
@@ -30,21 +39,21 @@
         },
         "lastVoted": {
           "$voter": {
-            ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true && $voter === auth.uid"
+            ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true && $voter === auth.uid",
           }
         },
         "days": {
           "$day": {
             "$time": {
               "votes": {
-                "$voter": {
-                  ".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true && $voter === auth.uid"
-                }
-              }
+              	"$voter": {
+                	".write": "auth !== null && root.child('users').child(auth.uid).child('verified').val() === true && $voter === auth.uid",
+              	}
+            	}
             }
           }
         }
       }
-    }
+    },
   }
 }

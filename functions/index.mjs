@@ -1,4 +1,5 @@
 import { region, https } from 'firebase-functions'
+import { onValueCreated } from 'firebase-functions/v2/database'
 import fetch from 'node-fetch'
 
 const bggXmlBaseUrl = 'https://boardgamegeek.com/xmlapi2/'
@@ -26,4 +27,20 @@ export const bggSearchGame = region('europe-west1').runWith({
     status: resp.status,
     text: await resp.text()
   }
+})
+
+export const msgonvote = onValueCreated({
+  region: 'europe-west1',
+  instance: 'meeple-cgn-default-rtdb',
+  ref: '/events/{eventID}/lastVoted/{uid}'
+}, async (event) => {
+  const dbRoot = event.data.ref.root
+  /** @type {string} */
+  const userName = (await dbRoot.child(`users/${event.params.uid}/name`).get()).val()
+  // @ts-ignore parent is not null
+  const eventName = (await event.data.ref.parent.parent.child('name').get()).val()
+
+  await dbRoot.child('trace').push({
+    userName, eventName, event: JSON.stringify(event)
+  })
 })

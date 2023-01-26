@@ -14,10 +14,10 @@ Tailwind (Utility CSS Styling) and Firebase (Hosting, Database, Cloud Functions)
 ├─ functions/          # firebase cloud functions
 │  └─ index.mjs          # functions to proxy BoardGameGeek XML API (no CORS support)
 ├─ public/             # Favicons and service worker + manifest to make webapp installable
+│  └─ firebase.config    # This file needs to be created with API-Keys to your firebase instance
 ├─ src/                # Code:
 │  ├─ components/        # Svelte Components
 │  ├─ js/                # Supporting JS code modules
-│  │  └─ firebaseConfig.js # This file needs to be created with your firebase configuration
 │  ├─ pages/             # Index Page for Astro
 │  └─ index.svelte       # Primary routing component
 ├─ .eslintrc           # Linting with JS Standard Style and Svelte
@@ -29,6 +29,15 @@ Tailwind (Utility CSS Styling) and Firebase (Hosting, Database, Cloud Functions)
 ├─ tsconfig.json       # Intellisense and Linting configuration
 └─ README.md           # this document
 ```
+## Firebase Config
+
+You will need to provide Firebase API-Keys to your firebase-project.
+You can setup a free firebase-project and generate the needed keys in the
+firebase console under project-settings (config and messaging)
+
+If you want to work with my personal project and just contribute to
+this project, you can copy the configuration from:
+https://meeple-cgn.web.app/firebaseConfig.js
 
 ## HTTPS and Certificates
 
@@ -50,7 +59,7 @@ All commands are run from the root of the project, from a terminal:
 | `firebase login`       | Login to your own firebase project                 |
 | `firebase deploy`      | Deploy firebase hosting, functions and database    |
 
-## Firebase
+## Firebase Cloud Functions
 
 This project is setup to run with simple Email/Password authentication on firebase
 by default. The app can be deployed and run on firebase free of charge, but you

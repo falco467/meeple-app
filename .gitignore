@@ -10,7 +10,6 @@ firebase-debug.*.log*
 
 # Firebase config
 .firebaserc
-firebaseConfig.js
 
 # Runtime data
 pids
