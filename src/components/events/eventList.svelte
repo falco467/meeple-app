@@ -4,7 +4,7 @@
   import { eventList } from '../../js/eventListStore.js'
   import { removeEvent } from '../../js/firedb.js'
   import { getErrorMessage, getEventHash } from '../../js/helpers.js'
-  import { enableMessaging, isMessagingActive } from '../../js/messaging.js'
+  import { enableMessaging, wantMessaging } from '../../js/messaging.js'
   import Icon from '../icon.svelte'
   import EventBox from './eventBox.svelte'
   import EventDetails from './eventDetails.svelte'
@@ -14,7 +14,7 @@
 
   let errText = ''
   let selectedEvent = getEventIDFromHash()
-  let msgActive = isMessagingActive()
+  let showNotificationButton = wantMessaging()
 
   /** @param {string} eventID */
   async function tryDeleteEvent (eventID) {
@@ -28,7 +28,12 @@
   }
 
   async function tryEnableMessaging () {
-    msgActive = await enableMessaging()
+    try {
+      await enableMessaging()
+      showNotificationButton = wantMessaging()
+    } catch (err) {
+      errText = getErrorMessage(err)
+    }
   }
 
   /** @param {import('../../js/firedb.js').Event?} event */
@@ -59,7 +64,7 @@
 <main class="flex flex-col mb-10">
   {#if errText}<span class="text-red-500">{errText}</span>{/if}
 
-  {#if !msgActive}
+  {#if showNotificationButton}
     <button class="rounded border p-1 px-2" on:click={tryEnableMessaging}>
       Enable Notifications
     </button>

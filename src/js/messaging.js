@@ -1,15 +1,15 @@
 import { app, saveMessagingToken } from './firedb.js'
-import { getMessaging, getToken, onMessage } from 'firebase/messaging'
+import { getMessaging, getToken, isSupported, onMessage } from 'firebase/messaging'
 import { swRegistrationPromise } from './helpers.js'
-
-const messaging = /** @type {ReturnType<getMessaging>} */ (import.meta.env.SSR || getMessaging(app))
 
 import.meta.env.SSR || initMessaging()
 
 export async function initMessaging () {
-  if (window.Notification.permission !== 'granted') {
+  const ok = await isSupported()
+  if (!ok || window.Notification?.permission !== 'granted') {
     return false
   }
+  const messaging = getMessaging(app)
   const serviceWorkerRegistration = await swRegistrationPromise
   const token = await getToken(messaging,
     { vapidKey: /** @type {any} */(window).vapidKey, serviceWorkerRegistration })
@@ -18,7 +18,7 @@ export async function initMessaging () {
   // Display Notification if app is focused
   onMessage(messaging, payload => {
     // eslint-disable-next-line no-new
-    new window.Notification(
+    serviceWorkerRegistration.showNotification(
       payload.notification?.title || 'Notification', {
         body: payload.notification?.body,
         icon: '/apple-touch-icon.png'
@@ -28,11 +28,15 @@ export async function initMessaging () {
   return token != null
 }
 
-export function isMessagingActive () {
-  return window.Notification.permission === 'granted'
+export function wantMessaging () {
+  return window.Notification && window.Notification.permission !== 'granted'
 }
 
 export async function enableMessaging () {
+  const ok = await isSupported()
+  if (!ok || !window.Notification) {
+    throw new Error('This Browser does not support Web-Push Notifications')
+  }
   await window.Notification.requestPermission()
-  return await initMessaging()
+  await initMessaging()
 }

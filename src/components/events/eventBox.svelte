@@ -97,7 +97,6 @@
     <h2 class="overflow-hidden text-ellipsis whitespace-nowrap text-xl">
       {event.name}
     </h2>
-    <div class="flex-grow"></div>
   </div>
 
   {#each getSelectedDayAndTime(event) as day}
