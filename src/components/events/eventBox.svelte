@@ -173,7 +173,7 @@
       {/each}
       <div class="flex-grow"></div>
       {#if !event.lastVoted[uid]}
-        <button class="p-2 rounded border bg-emerald-700" on:click|stopPropagation={() => dispatch('open')}>
+        <button class="p-1 px-2 rounded border bg-emerald-700" on:click|stopPropagation={() => dispatch('open')}>
           Vote
         </button>
       {/if}
