@@ -3,7 +3,7 @@
   import { flip } from 'svelte/animate'
   import { eventList } from '../../js/eventListStore.js'
   import { removeEvent } from '../../js/firedb.js'
-  import { getErrorMessage } from '../../js/helpers.js'
+  import { getErrorMessage, getEventHash } from '../../js/helpers.js'
   import { enableMessaging, isMessagingActive } from '../../js/messaging.js'
   import Icon from '../icon.svelte'
   import EventBox from './eventBox.svelte'
@@ -13,7 +13,7 @@
   export let uid
 
   let errText = ''
-  let selectedEvent = window.location.hash ? window.location.hash.split(/[#:]/)[1] : null
+  let selectedEvent = getEventIDFromHash()
   let msgActive = isMessagingActive()
 
   /** @param {string} eventID */
@@ -31,11 +31,32 @@
     msgActive = await enableMessaging()
   }
 
+  /** @param {import('../../js/firedb.js').Event?} event */
+  function select (event) {
+    selectedEvent = event ? event.id : null
+    const newHash = event ? getEventHash(event) : ''
+    window.history.pushState(null, '', `${window.location.pathname}${newHash}`)
+  }
+
+  /** @param {HashChangeEvent} event */
+  function onHashChange (event) {
+    selectedEvent = getEventIDFromHash()
+  }
+
+  function getEventIDFromHash () {
+    return window.location.hash ? window.location.hash.split(/[#:]/)[1] : null
+  }
+
+  window.addEventListener('hashchange', onHashChange)
+
   const unsubEvents = eventList.load(err => { errText = getErrorMessage(err) })
-  onDestroy(unsubEvents)
+  onDestroy(() => {
+    unsubEvents()
+    window.removeEventListener('hashchange', onHashChange)
+  })
 </script>
 
-<main class="flex flex-col gap-2 mb-10">
+<main class="flex flex-col mb-10">
   {#if errText}<span class="text-red-500">{errText}</span>{/if}
 
   {#if !msgActive}
@@ -45,15 +66,24 @@
   {/if}
 
   {#each $eventList as event (event.id)}
-    <div animate:flip={{ duration: 200 }}>
+    <div class="flex flex-col" animate:flip={{ duration: 200 }}>
       {#if selectedEvent === event.id}
-        <EventDetails {event} {uid} on:close={() => { selectedEvent = null }}
+        <EventDetails {event} {uid} on:close={() => select(null)}
           on:remove={() => tryDeleteEvent(event.id)}/>
       {:else if !selectedEvent}
-        <EventBox {event} {uid} on:open={() => { selectedEvent = event.id }}/>
+        <EventBox {event} {uid} on:open={() => select(event)}/>
       {/if}
     </div>
   {/each}
+  {#if selectedEvent}
+    {#if !$eventList.some(e => e.id === selectedEvent)}
+      <span class="text-center my-10">This event does not exist.</span>
+    {/if}
+
+    <button class="flex items-center self-end gap-1 rounded border p-1 px-2 mt-2" on:click={() => select(null)}>
+      <Icon i="arrow-left"/> Back to List
+    </button>
+  {/if}
 
   <button class="fixed px-3 py-2 left-0 bottom-0 rounded-tr-lg bg-emerald-800"
     on:click={() => { window.location.href = '/' }}>

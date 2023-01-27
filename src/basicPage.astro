@@ -1,4 +1,6 @@
 ---
+import { firebaseConfig, vapidKey } from '../public/firebaseConfig'
+
 export interface Props {
 	title: string
 }
@@ -14,7 +16,10 @@ const { title } = Astro.props;
     <link rel="manifest" href="site.webmanifest" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
-    
+    <script define:vars={{ firebaseConfig, vapidKey }}>
+      // @ts-ignore APIKeys cannot be imported directly from public directory
+      window.firebaseConfig = firebaseConfig; window.vapidKey = vapidKey
+    </script>    
   </head>
   <body class="flex flex-col gap-3 bg-slate-700 text-slate-300 font-sans p-3">
     <slot/>

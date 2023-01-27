@@ -2,9 +2,9 @@ import { initializeApp } from 'firebase/app'
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check'
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth'
 import { getDatabase, onValue, push, ref, remove, set, update } from 'firebase/database'
-import { firebaseConfig } from './firebaseConfig.js'
 
-export const app = /** @type {ReturnType<initializeApp>} */ (import.meta.env.SSR || initializeApp(firebaseConfig))
+export const app = /** @type {ReturnType<initializeApp>} */
+  (import.meta.env.SSR || initializeApp(/** @type {any} */(window).firebaseConfig))
 
 import.meta.env.SSR || initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider('6Ld5yeIjAAAAAAWy-JqWV4ObHjP5AUAdWsGToDWB'),
@@ -58,7 +58,7 @@ export function listenUsers (listener, errCallback) {
 
 /** @param {string} uid @param {string} name */
 export async function setUsername (uid, name) {
-  await set(ref(db, `users/${uid}`), { name })
+  await set(ref(db, `users/${uid}/name`), name)
 }
 // #endregion
 

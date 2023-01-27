@@ -60,15 +60,19 @@ export function hasAny (o) {
 /** @param {() => void} f */
 export const onEnter = (f) => (/** @type {KeyboardEvent} */ e) => e.key === 'Enter' && f()
 
+/** @param {import('./firedb.js').Event} event */
+export function getEventHash (event) {
+  const name = encodeURIComponent(event.name.replaceAll(' ', '_'))
+  return `#${event.id}:${name}`
+}
+
 /** @param {import('./firedb.js').Event} event @param {import('./firedb.js').UserMap} userList */
 export async function shareEvent (event, userList) {
   const baseURL = window.location.href.split('#')[0]
-  const creator = encodeURIComponent(userList[event.creator]?.name)
-  const name = encodeURIComponent(event.name.replaceAll(' ', '_'))
-  const url = `${baseURL}#${event.id}:${creator}:${name}`
+  const url = `${baseURL}${getEventHash(event)}`
   const shareData = {
     title: 'Meeple Event',
-    text: `Event: ${creator}: ${event.name}`,
+    text: `Event: ${event.name}`,
     url
   }
   if (navigator.canShare(shareData)) {

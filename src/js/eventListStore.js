@@ -7,7 +7,7 @@ import { getSavedState, saveState, toISODay } from './helpers.js'
 const storageKey = 'meeple:eventList'
 
 /** @type {Event[]} */
-const gl = getSavedState(storageKey) || {}
+const gl = getSavedState(storageKey) || []
 
 const { set, subscribe } = writable(gl)
 
@@ -40,7 +40,7 @@ function bToN (b) {
 }
 
 /** @param {Event} event */
-function isEventOver (event) {
+export function isEventOver (event) {
   if (!event.selectedDay) return false
   const todayIso = toISODay(new Date())
   return event.selectedDay.localeCompare(todayIso) < 0

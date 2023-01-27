@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { getDate, getDayList, shareEvent } from '../../js/helpers.js'
+    import { isEventOver } from '../../js/eventListStore.js'
+  import { getDate, getDayList } from '../../js/helpers.js'
   import { userList } from '../../js/userStore.js'
   import Icon from '../icon.svelte'
 
@@ -77,20 +78,26 @@
   function getVoteScore (v) {
     return v.voteCount + v.starCount * 0.3 + (v.homeCount ? 0.5 : 0)
   }
+
+  /** @param {typeof event} _eventForReactivity */
+  function getEventColor (_eventForReactivity) {
+    const today = new Date()
+    today.setTime(today.getTime() - today.getTime() % (24 * 60 * 60 * 1000))
+
+    if (isEventOver(event)) {
+      return ' bg-neutral-800 text-neutral-400'
+    }
+    return ' bg-slate-800'
+  }
 </script>
 
-<article class="flex flex-col gap-2 bg-slate-800 rounded p-2" class:border={!event.lastVoted[uid]}>
+<button class={'flex flex-col items-stretch gap-2 rounded p-2 mb-2 ' + getEventColor(event)}
+  on:click={() => dispatch('open')}>
   <div class="flex items-center gap-1">
     <h2 class="overflow-hidden text-ellipsis whitespace-nowrap text-xl">
       {event.name}
     </h2>
     <div class="flex-grow"></div>
-    <button class="p-2 rounded border" on:click={() => shareEvent(event, $userList)}>
-      <Icon i="share" stroke={2} class="!w-4 !h-4"/>
-    </button>
-    <button class="px-2 p-1 rounded border" on:click={() => dispatch('open')}>
-      Open
-    </button>
   </div>
 
   {#each getSelectedDayAndTime(event) as day}
@@ -165,6 +172,11 @@
         </li>
       {/each}
       <div class="flex-grow"></div>
+      {#if !event.lastVoted[uid]}
+        <button class="p-2 rounded border bg-emerald-700" on:click|stopPropagation={() => dispatch('open')}>
+          Vote
+        </button>
+      {/if}
     </ul>
   {/each}
-</article>
+</button>

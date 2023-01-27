@@ -2,9 +2,6 @@ import { app, saveMessagingToken } from './firedb.js'
 import { getMessaging, getToken, onMessage } from 'firebase/messaging'
 import { swRegistrationPromise } from './helpers.js'
 
-// @ts-ignore fireBaseConfig has to be provided via public folder
-import { vapidKey } from '../firebaseConfig.js'
-
 const messaging = /** @type {ReturnType<getMessaging>} */ (import.meta.env.SSR || getMessaging(app))
 
 import.meta.env.SSR || initMessaging()
@@ -14,7 +11,8 @@ export async function initMessaging () {
     return false
   }
   const serviceWorkerRegistration = await swRegistrationPromise
-  const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration })
+  const token = await getToken(messaging,
+    { vapidKey: /** @type {any} */(window).vapidKey, serviceWorkerRegistration })
   saveMessagingToken(token)
 
   // Display Notification if app is focused

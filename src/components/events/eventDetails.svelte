@@ -105,17 +105,14 @@
       <button class="p-2 rounded border" on:click={() => shareEvent(event, $userList)}>
         <Icon i="share" stroke={2} class="!w-4 !h-4"/>
       </button>
-      <button class="px-2 p-1 rounded border" on:click={() => dispatch('close')}>
-        Close
-      </button>
     {/if}
   </div>
 
   <div class="flex items-center gap-1">
-    Please vote:
+    Vote:
     <Icon i="thumbs-up" class="ml-2" stroke={2} />ok
     <Icon i="star" class="ml-2" stroke={2} />favorite
-    <Icon i="home" class="ml-2" stroke={2} />you can host
+    <Icon i="home" class="ml-2" stroke={2} />can host
   </div>
 
   {#each getDayList(event.days) as day (day.date)}
