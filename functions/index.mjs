@@ -182,7 +182,7 @@ export const msgonselect = onValueWritten({
     .filter(([k, v]) => k !== eventCreator && interested.includes(k))
     .flatMap(([k, v]) => Object.keys(v.tokens || {}))
 
-  if (!tokens) {
+  if (!tokens.length) {
     return
   }
 
