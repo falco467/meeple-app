@@ -176,3 +176,19 @@ export async function saveMessagingToken (token) {
     console.error(err)
   }
 }
+
+/** @param {string} id @param {{[date:string]:string}} dayTimes @param {string} uid */
+export async function addEventTimes (id, dayTimes, uid) {
+  /** @type {{[path:string]: EventDay}} */
+  const updates = {}
+  Object.entries(dayTimes).forEach(([date, time]) => {
+    updates[date] = {
+      [time]: {
+        created: Date.now(),
+        votes: { [uid]: { isFavorite: false, isHome: false } }
+      }
+    }
+  })
+
+  await update(ref(db, `events/${id}/days`), updates)
+}

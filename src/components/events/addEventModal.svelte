@@ -5,7 +5,7 @@
   import Icon from '../icon.svelte'
   import CalendarBox from './calendarBox.svelte'
   import EventDetails from './eventDetails.svelte'
-  import InputModal from './inputModal.svelte'
+  import InputModal from './inputDialog.svelte'
 
   /** @type {string} */
   export let uid
@@ -113,6 +113,7 @@
     </button>
   </div>
 
-  <InputModal bind:value={timeInput} bind:visible={timeModalVisible} submit={submitTimeInput} />
+  <InputModal bind:value={timeInput} bind:visible={timeModalVisible} onConfirm={submitTimeInput}
+    label="Change time" confirmText="Set time" minlength={2} maxlength={12} />
 
 </div>

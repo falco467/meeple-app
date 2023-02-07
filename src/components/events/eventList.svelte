@@ -74,7 +74,7 @@
     <div class="flex flex-col" animate:flip={{ duration: 200 }}>
       {#if selectedEvent === event.id}
         <EventDetails {event} {uid} on:close={() => select(null)}
-          on:remove={() => tryDeleteEvent(event.id)}/>
+          onRemove={() => tryDeleteEvent(event.id)}/>
       {:else if !selectedEvent}
         <EventBox {event} {uid} on:open={() => select(event)}/>
       {/if}

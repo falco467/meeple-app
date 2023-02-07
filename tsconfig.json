@@ -1,6 +1,6 @@
 {
   "extends": "astro/tsconfigs/strict",
-  "exclude": ["./dist/**/*", "./functions/**/*", "**/node_modules/**"],
+  "exclude": ["dist", "functions", "node_modules", ".astro"],
   "compilerOptions": {
     "target": "ES2022",
     "module": "ES2022",

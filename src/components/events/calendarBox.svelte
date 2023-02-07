@@ -1,17 +1,20 @@
 <script>
   import { getDate, toISODay } from '../../js/helpers.js'
-  import InputModal from './inputModal.svelte'
+  import InputModal from './inputDialog.svelte'
 
   /** @type {import('../../js/firedb.js').Event} */
   export let event
   /** @type {string} */
   export let uid
+  export let readOnly = false
+  /** @type {{[date:string]:string}} */
+  export const toAddList = {}
 
   let displayWeeks = 4
   let defaultTime = 'evening'
 
   /** @type {{isFiller?: boolean, isMonth?: boolean, label?: string, date?: string,
-   * dom?: number, isWeekend?:boolean, active?:boolean, isInset?: boolean }[]} */
+   * dom?: number, isWeekend?:boolean, active?:boolean, disabled?:boolean, isInset?: boolean }[]} */
   let calendarList
 
   $: generateCalendarList(displayWeeks)
@@ -40,7 +43,8 @@
         date,
         dom: d.getDate(),
         isWeekend: d.getDay() === 0 || d.getDay() === 6,
-        active: event.days[date] != null
+        active: event.days[date] != null || toAddList[date] != null,
+        disabled: event.days[date] != null && readOnly
       })
       d.setDate(d.getDate() + 1)
     }
@@ -53,11 +57,19 @@
     return (d.getDay() || 7) - 1
   }
 
-  /** @param {{date?: string, active?: boolean}} d */
+  /** @param {typeof calendarList[0]} d */
   function toggleDay (d) {
     if (!d.date) return
-    if (d.active) {
+    if (readOnly) {
+      if (d.disabled) return
+      if (d.active) {
+        delete toAddList[d.date]
+      } else {
+        toAddList[d.date] = defaultTime
+      }
+    } else if (d.active) {
       delete event.days[d.date]
+      event = event
     } else {
       event.days[d.date] = {
         [defaultTime]: {
@@ -72,7 +84,6 @@
       }
     }
     d.active = !d.active
-    event = event
     calendarList = calendarList
   }
 
@@ -92,6 +103,12 @@
     defaultTime = timeInput
   }
 
+  /** @param {string} time */
+  function updateToAddListTime (time) {
+    Object.keys(toAddList).forEach(k => { toAddList[k] = time })
+  }
+
+  $: updateToAddListTime(defaultTime)
 </script>
 
 <span class="-mb-3">Please select avaiable days:</span>
@@ -103,7 +120,9 @@
     <span></span>
   {:else}
     <button class="rounded p-2" class:text-amber-700={d.isWeekend}
-      class:bg-slate-800={!d.active} class:bg-emerald-800={d.active}
+      class:bg-slate-800={!d.active}
+      class:bg-neutral-800={d.active && d.disabled}
+      class:bg-emerald-800={d.active && !d.disabled}
       on:click={() => toggleDay(d)}>
       {d.dom}
     </button>
@@ -115,6 +134,7 @@
       Defaut Time: {defaultTime}
     </button>
   </div>
-</article>
 
-<InputModal bind:value={timeInput} bind:visible={timeModalVisible} submit={submitTimeInput} />
+  <InputModal bind:value={timeInput} bind:visible={timeModalVisible} onConfirm={submitTimeInput}
+    label="Change default time" confirmText="Set time" minlength={2} maxlength={12} />
+</article>

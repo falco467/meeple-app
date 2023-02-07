@@ -1,20 +1,22 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { setEventFinalDate, setEventLastVoted, setEventVote } from '../../js/firedb.js'
+  import { addEventTimes, setEventFinalDate, setEventLastVoted, setEventVote } from '../../js/firedb.js'
   import { getDayList, getErrorMessage, shareEvent } from '../../js/helpers.js'
   import { userList } from '../../js/userStore.js'
+  import Dialog from '../dialog.svelte'
   import Icon from '../icon.svelte'
+    import CalendarBox from './calendarBox.svelte'
 
   /** @type {string} */
   export let uid
   /** @type {import('../../js/firedb.js').Event} */
   export let event
-
   export let editing = false
+  export let onRemove = async () => {}
 
   let errText = ''
   let deleteModalVisible = false
-
+  let addTimesVisible = false
   let selectionInProgress = false
 
   const dispatch = createEventDispatcher()
@@ -93,6 +95,14 @@
   function isSelected (day, time) {
     return event.selectedDay === day && event.selectedTime === time
   }
+
+  /** @type {{[date:string]: string}} */
+  let toAddList
+
+  async function tryAddTimes () {
+    if (!Object.keys(toAddList).length) throw Error('No new dates selected')
+    await addEventTimes(event.id, toAddList, uid)
+  }
 </script>
 
 <article class="flex flex-col gap-2 bg-slate-800 rounded p-2" class:border={!event.lastVoted[uid]}>
@@ -120,7 +130,7 @@
       {#each Object.entries(day.times) as [t, timeSlot], i (t)}
         <div class="flex flex-col rounded p-1"
           class:border={isSelected(day.date, t)} class:bg-slate-700={isSelected(day.date, t)}>
-          <section class="flex items-center gap-2">
+          <section class="flex items-center gap-2 flex-wrap">
             {#if i === 0 || isSelected(day.date, t)}
               <div class="basis-8 text-sm font-bold text-slate-500">
                 {day.weekday}
@@ -160,6 +170,7 @@
                 </span>Select
               </button>
             {:else}
+            <div class="flex items-center">
               <button class="rounded-full p-1" class:bg-sky-800={timeSlot.votes?.[uid]}
                 on:click={() => tryToggleVote(day.date, t, 'basic')}>
                 <Icon i="thumbs-up" title="ok" stroke={2}/>
@@ -172,6 +183,7 @@
                 on:click={() => tryToggleVote(day.date, t, 'home')}>
                 <Icon i="home" title="host" stroke={2}/>
               </button>
+            </div>
             {/if}
           </section>
 
@@ -205,14 +217,18 @@
         </button>
       </div>
     {:else}
-      <div class="flex gap-5">
+      <div class="flex gap-3">
         <button class="rounded border p-1 px-2 text-amber-700 border-amber-700"
           on:click={() => { deleteModalVisible = true }}>
-          Delete Event
+          Delete
         </button>
         <div class="flex-grow"></div>
+        <button class="rounded border p-1 px-2"
+          on:click={() => { addTimesVisible = true }}>
+          Add times
+        </button>
         <button class="rounded border p-1 px-2" on:click={() => { selectionInProgress = true }}>
-          {event.selectedDay ? 'Change' : 'Select'} final date
+          {event.selectedDay ? 'Change' : 'Select'} date
         </button>
       </div>
     {/if}
@@ -225,27 +241,15 @@
   </div>
   {/if}
 
-  {#if deleteModalVisible}
-    <aside class="fixed inset-0 flex items-center justify-center bg-slate-800 bg-opacity-80"
-      on:click|self={() => { deleteModalVisible = false }}
-      on:keyup={e => e.key === 'Escape' && (deleteModalVisible = false)}>
-      <div class="flex flex-col p-3 gap-3 w-64 rounded bg-slate-900">
-        <span>Really delete Event:</span>
-        <span>{event.name}</span>
+  <Dialog bind:visible={addTimesVisible} confirmText="Add Times" onConfirm={tryAddTimes}>
+    <div class="flex flex-col gap-5 max-h-96 overflow-y-scroll">
+      <CalendarBox bind:toAddList {uid} {event} readOnly/>
+    </div>
+  </Dialog>
 
-        {#if errText}<span class="text-red-500">{errText}</span>{/if}
-
-        <div class="flex items-center gap-3">
-          <button class="flex-grow bg-sky-800 rounded px-5 py-2 disabled:bg-neutral-800"
-            on:click={() => dispatch('remove')}>
-            Delete Event
-          </button>
-          <button class="flex-grow bg-slate-800 rounded px-5 py-2"
-            on:click={() => { deleteModalVisible = false }}>
-            Close
-          </button>
-        </div>
-      </div>
-    </aside>
-  {/if}
+  <Dialog bind:visible={deleteModalVisible} confirmText="Delete Event" confirmClass="bg-amber-700"
+    onConfirm={onRemove}>
+    <span>Confirm deletion of Event</span>
+    <span>{event.name}</span>
+  </Dialog>
 </article>
