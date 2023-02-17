@@ -1,16 +1,10 @@
 <script>
-  import { createEventDispatcher } from 'svelte'
-  import { addEvent } from '../../js/firedb.js'
-  import { getErrorMessage } from '../../js/helpers.js'
+  import { addEvent, uid } from '../../js/firedb.js'
+  import { customDispatch, getErrorMessage } from '../../js/helpers.js'
   import Icon from '../icon.svelte'
   import CalendarBox from './calendarBox.svelte'
   import EventDetails from './eventDetails.svelte'
   import InputModal from './inputDialog.svelte'
-
-  /** @type {string} */
-  export let uid
-
-  const dispatch = createEventDispatcher()
 
   /** @type {import('../../js/firedb.js').Event} */
   let event = {
@@ -69,7 +63,8 @@
     event = event
   }
 
-  async function tryAddEvent () {
+  /** @param {Event} e */
+  async function tryAddEvent (e) {
     errText = ''
     loading = true
     try {
@@ -80,7 +75,7 @@
         throw new Error('Event needs at least one date')
       }
       await addEvent(event)
-      dispatch('close')
+      customDispatch(e, 'close')
     } catch (err) {
       errText = getErrorMessage(err)
     }
@@ -94,9 +89,9 @@
   <input bind:value={event.name} type="text" placeholder="event name" autofocus
     required minlength="4" maxlength="30" class="bg-slate-500 rounded p-2"/>
 
-  <CalendarBox bind:event {uid} />
+  <CalendarBox bind:event />
 
-  <EventDetails bind:event {uid} editing
+  <EventDetails bind:event editing
     on:removeTime={e => removeTime(e.detail.day, e.detail.time)}
     on:addTime={e => showTimeInputModal(e.detail.day)}
     on:editTime={e => showTimeInputModal(e.detail.day, e.detail.time)}/>
@@ -108,7 +103,7 @@
       class:invisible={event == null} on:click={tryAddEvent}>
       {#if loading}<Icon i="cube" class="animate-spin" />{:else}Add Event{/if}
     </button>
-    <button class="flex-grow bg-slate-800 rounded px-5 py-3" on:click={() => dispatch('close')}>
+    <button class="flex-grow bg-slate-800 rounded px-5 py-3" on:click={e => customDispatch(e, 'close')}>
       Close
     </button>
   </div>

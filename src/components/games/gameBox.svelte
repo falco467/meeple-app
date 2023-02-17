@@ -1,11 +1,9 @@
 <script>
   import { scale } from 'svelte/transition'
-  import { addVote, removeVote } from '../../js/firedb.js'
+  import { addVote, removeVote, uid } from '../../js/firedb.js'
   import { userList } from '../../js/userStore.js'
   import Icon from '../icon.svelte'
 
-  /** @type {string} */
-  export let uid
   /** @type {import('../../js/firedb.js').Game} */
   export let game
 

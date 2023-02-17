@@ -3,18 +3,17 @@
   import { flip } from 'svelte/animate'
   import { eventList } from '../../js/eventListStore.js'
   import { removeEvent } from '../../js/firedb.js'
-  import { getErrorMessage, getEventHash } from '../../js/helpers.js'
+  import { getErrorMessage, getEventHash, getEventIDFromHash } from '../../js/helpers.js'
   import { enableMessaging, wantMessaging } from '../../js/messaging.js'
   import Icon from '../icon.svelte'
+    import CalSubscribeDialog from './calSubscribeDialog.svelte';
   import EventBox from './eventBox.svelte'
   import EventDetails from './eventDetails.svelte'
-
-  /** @type {string} */
-  export let uid
 
   let errText = ''
   let selectedEvent = getEventIDFromHash()
   let showNotificationButton = wantMessaging()
+  let showCalSubscibeDialog = false
 
   /** @param {string} eventID */
   async function tryDeleteEvent (eventID) {
@@ -48,17 +47,16 @@
     selectedEvent = getEventIDFromHash()
   }
 
-  function getEventIDFromHash () {
-    return window.location.hash ? window.location.hash.split(/[#:]/)[1] : null
+  if (!import.meta.env.SSR) {
+    window.addEventListener('hashchange', onHashChange)
+
+    const unsubEvents = eventList.load(err => { errText = getErrorMessage(err) })
+    onDestroy(() => {
+      unsubEvents()
+      window.removeEventListener('hashchange', onHashChange)
+    })
   }
 
-  window.addEventListener('hashchange', onHashChange)
-
-  const unsubEvents = eventList.load(err => { errText = getErrorMessage(err) })
-  onDestroy(() => {
-    unsubEvents()
-    window.removeEventListener('hashchange', onHashChange)
-  })
 </script>
 
 <main class="flex flex-col mb-10">
@@ -73,10 +71,10 @@
   {#each $eventList as event (event.id)}
     <div class="flex flex-col" animate:flip={{ duration: 200 }}>
       {#if selectedEvent === event.id}
-        <EventDetails {event} {uid} on:close={() => select(null)}
+        <EventDetails {event} on:close={() => select(null)}
           onRemove={() => tryDeleteEvent(event.id)}/>
       {:else if !selectedEvent}
-        <EventBox {event} {uid} on:open={() => select(event)}/>
+        <EventBox {event} on:open={() => select(event)}/>
       {/if}
     </div>
   {/each}
@@ -88,7 +86,13 @@
     <button class="flex items-center self-end gap-1 rounded border p-1 px-2 mt-2" on:click={() => select(null)}>
       <Icon i="arrow-left"/> Back to List
     </button>
+  {:else}
+    <button class="rounded border p-1 px-2" on:click={() => {showCalSubscibeDialog = true}}>
+      Calendar Intergration
+    </button>
   {/if}
+
+  <CalSubscribeDialog bind:visible={showCalSubscibeDialog}/>
 
   <button class="fixed px-3 py-2 left-0 bottom-0 rounded-tr-lg bg-emerald-800"
     on:click={() => { window.location.href = '/' }}>

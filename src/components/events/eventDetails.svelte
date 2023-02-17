@@ -1,14 +1,12 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { addEventTimes, setEventFinalDate, setEventLastVoted, setEventVote } from '../../js/firedb.js'
+  import { addEventTimes, setEventFinalDate, setEventLastVoted, setEventVote, uid } from '../../js/firedb.js'
   import { getDayList, getErrorMessage, shareEvent } from '../../js/helpers.js'
   import { userList } from '../../js/userStore.js'
   import Dialog from '../dialog.svelte'
   import Icon from '../icon.svelte'
-    import CalendarBox from './calendarBox.svelte'
+  import CalendarBox from './calendarBox.svelte'
 
-  /** @type {string} */
-  export let uid
   /** @type {import('../../js/firedb.js').Event} */
   export let event
   export let editing = false
@@ -243,7 +241,7 @@
 
   <Dialog bind:visible={addTimesVisible} confirmText="Add Times" onConfirm={tryAddTimes}>
     <div class="flex flex-col gap-5 max-h-96 overflow-y-scroll">
-      <CalendarBox bind:toAddList {uid} {event} readOnly/>
+      <CalendarBox bind:toAddList {event} readOnly/>
     </div>
   </Dialog>
 

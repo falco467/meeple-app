@@ -21,7 +21,7 @@ export function load (errCallback) {
     const list = Object.values(eventMap)
     list.forEach(e => !e.days && (e.days = {}))
     list.sort((a, b) => (
-      bToN(isEventOver(b)) - bToN(isEventOver(a))) ||
+      bToN(isEventOver(a)) - bToN(isEventOver(b))) ||
       getDay(a).localeCompare(getDay(b)) ||
       b.created - a.created)
     set(list)
@@ -34,6 +34,11 @@ function getDay (event) {
   return event.selectedDay || Object.keys(event.days).sort()[0]
 }
 
+/** @param {Event} event */
+function getLastDay (event) {
+  return event.selectedDay || Object.keys(event.days).sort().at(-1) || ''
+}
+
 /** @param {boolean} b */
 function bToN (b) {
   return b ? 1 : 0
@@ -41,9 +46,8 @@ function bToN (b) {
 
 /** @param {Event} event */
 export function isEventOver (event) {
-  if (!event.selectedDay) return false
   const todayIso = toISODay(new Date())
-  return event.selectedDay.localeCompare(todayIso) < 0
+  return getLastDay(event).localeCompare(todayIso) < 0
 }
 
 export const eventList = {

@@ -99,3 +99,24 @@ export function saveState (key, state) {
   if (import.meta.env.SSR) return
   window.localStorage.setItem(key, JSON.stringify(state))
 }
+
+export function getEventIDFromHash () {
+  if (import.meta.env.SSR) return null
+  return window.location.hash ? window.location.hash.split(/[#:]/)[1] : null
+}
+
+/** @template T @param {Event} e @param {string} name @param {T} [detail] */
+export function customDispatch (e, name, detail = undefined) {
+  e.target?.dispatchEvent(new window.CustomEvent(name, {
+    bubbles: true,
+    detail
+  }))
+}
+
+/** @template T @param {HTMLElement} node @param {{on:string, do:(e:CustomEvent<T>)=>void}} p  */
+export function customListener (node, p) {
+  node.addEventListener(p.on, /** @type {EventListener} */ (p.do))
+  return {
+    destroy: () => node.removeEventListener(p.on, /** @type {EventListener} */ (p.do))
+  }
+}

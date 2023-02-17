@@ -1,11 +1,11 @@
 <script>
+    import { uid } from '../../js/firedb.js'
   import { getDate, toISODay } from '../../js/helpers.js'
   import InputModal from './inputDialog.svelte'
 
   /** @type {import('../../js/firedb.js').Event} */
   export let event
-  /** @type {string} */
-  export let uid
+
   export let readOnly = false
   /** @type {{[date:string]:string}} */
   export const toAddList = {}

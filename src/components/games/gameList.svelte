@@ -6,19 +6,18 @@
   import GameBox from './gameBox.svelte'
   import Icon from '../icon.svelte'
 
-  /** @type {string} */
-  export let uid
-
   let errText = ''
 
-  const unsubGame = gameList.load(err => { errText = getErrorMessage(err) })
-  onDestroy(unsubGame)
+  if (!import.meta.env.SSR) {
+    const unsubGame = gameList.load(err => { errText = getErrorMessage(err) })
+    onDestroy(unsubGame)
+  }
 </script>
 
 <main class="flex flex-col gap-1">
   {#each $gameList as game (game.gid)}
     <div animate:flip={{ duration: (dist) => Math.sqrt(dist) * 50 }}>
-      <GameBox {game} {uid} />
+      <GameBox {game} />
     </div>
   {/each}
 

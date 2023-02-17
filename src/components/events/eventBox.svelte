@@ -1,14 +1,11 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-    import { isEventOver } from '../../js/eventListStore.js'
   import { getDate, getDayList } from '../../js/helpers.js'
+  import { isEventOver } from '../../js/eventListStore.js'
   import { userList } from '../../js/userStore.js'
   import Icon from '../icon.svelte'
+    import { uid } from '../../js/firedb.js'
 
-  // import { addEventVote, removeEventVote } from '../js/firedb.js'
-
-  /** @type {string} */
-  export let uid
   /** @type {import('../../js/firedb.js').Event} */
   export let event
 

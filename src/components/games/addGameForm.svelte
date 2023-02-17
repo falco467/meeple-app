@@ -1,14 +1,9 @@
 <script>
-  import { createEventDispatcher } from 'svelte'
+  import { customDispatch, getErrorMessage, onEnter } from '../../js/helpers.js'
   import { addGame } from '../../js/firedb.js'
-  import { getErrorMessage, onEnter } from '../../js/helpers.js'
   import { bggLoadGame, bggSearchGame } from '../../js/bggSearch.js'
   import Icon from '../icon.svelte'
-    import GameBox from './gameBox.svelte'
-
-  /** @type {string} */
-  // eslint-disable-next-line svelte/valid-compile
-  export let uid
+  import GameBox from './gameBox.svelte'
 
   let searchText = ''
   /** @type {import('../../js/firedb.js').Game?} */
@@ -20,8 +15,6 @@
   let errText = ''
   let loading = false
   let gameAdded = false
-
-  const dispatch = createEventDispatcher()
 
   async function trySearchGame () {
     gameAdded = false
@@ -90,7 +83,7 @@
   {#if errText}<span class="text-red-500">{errText}</span>{/if}
 
   {#if game}
-    <GameBox {game} {uid} preview/>
+    <GameBox {game} preview/>
 
   {:else if searchResults != null}
     <main class="flex flex-col gap-2 items-stretch">
@@ -110,7 +103,7 @@
       class:invisible={game == null} on:click={tryAddGame}>
       {#if loading}<Icon i="cube" class="animate-spin" />{:else}Add Game{/if}
     </button>
-    <button class="flex-grow bg-slate-800 rounded px-5 py-3" on:click={() => dispatch('close')}>
+    <button class="flex-grow bg-slate-800 rounded px-5 py-3" on:click={e => customDispatch(e, 'close')}>
       Close
     </button>
   </div>

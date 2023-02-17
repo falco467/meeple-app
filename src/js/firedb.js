@@ -1,7 +1,8 @@
 import { initializeApp } from 'firebase/app'
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check'
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth'
-import { getDatabase, onValue, push, ref, remove, set, update } from 'firebase/database'
+import { get, getDatabase, onValue, push, ref, remove, set, update } from 'firebase/database'
+import { getSavedState, saveState } from './helpers.js'
 
 export const app = /** @type {ReturnType<initializeApp>} */
   (import.meta.env.SSR || initializeApp(/** @type {any} */(window).firebaseConfig))
@@ -16,17 +17,25 @@ const db = /** @type {ReturnType<getDatabase>} */ (import.meta.env.SSR || getDat
 
 // #region Auth
 
-export async function getLogin () {
-  if (import.meta.env.SSR) return '***'
+const uidStorageKey = 'meeple:uid'
 
-  /** @type {import('firebase/auth').User} */
-  const user = await new Promise((resolve, reject) => {
+export let uid = getSavedState(uidStorageKey) || ''
+
+export async function checkLogin () {
+  if (import.meta.env.SSR) return
+
+  /** @type {import('firebase/auth').User?} */
+  const user = await new Promise(resolve => {
     const unsub = onAuthStateChanged(auth, user => {
       unsub()
-      if (user) { resolve(user) } else { reject(new Error('Not logged in')) }
+      resolve(user)
     })
   })
-  return user.uid
+  if (!user) return false
+
+  uid = user.uid
+  saveState(uidStorageKey, uid)
+  return true
 }
 
 /** @param {string} email @param {string} password */
@@ -59,6 +68,15 @@ export function listenUsers (listener, errCallback) {
 /** @param {string} uid @param {string} name */
 export async function setUsername (uid, name) {
   await set(ref(db, `users/${uid}/name`), name)
+}
+
+/** @param {string} token */
+export async function saveMessagingToken (token) {
+  try {
+    await set(ref(db, `messaging/${uid}/tokens/${token}`), Date.now())
+  } catch (err) {
+    console.error(err)
+  }
 }
 // #endregion
 
@@ -165,17 +183,6 @@ export async function setEventFinalDate (id, day, time) {
     selectedTime: time
   })
 }
-// #endregion
-
-/** @param {string} token */
-export async function saveMessagingToken (token) {
-  try {
-    const uid = await getLogin()
-    await set(ref(db, `messaging/${uid}/tokens/${token}`), Date.now())
-  } catch (err) {
-    console.error(err)
-  }
-}
 
 /** @param {string} id @param {{[date:string]:string}} dayTimes @param {string} uid */
 export async function addEventTimes (id, dayTimes, uid) {
@@ -192,3 +199,10 @@ export async function addEventTimes (id, dayTimes, uid) {
 
   await update(ref(db, `events/${id}/days`), updates)
 }
+
+/** @returns {Promise<string>} */
+export async function getICalURL() {
+  return (await get(ref(db, 'calendar/icsDownloadURL'))).val()
+}
+
+// #endregion

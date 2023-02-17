@@ -1,7 +1,12 @@
 ---
-import Index from '../index.svelte'
+import Overview from '../components/overview.svelte'
 import BasicPage from '../basicPage.astro'
+import AddEventForm from '../components/events/addEventForm.svelte';
+import EventList from '../components/events/eventList.svelte';
 ---
 <BasicPage title="Meeple App">
-  <Index client:only kind="events"/>
+  <Overview client:load kind="Event">
+    <EventList client:load slot="list"/>
+    <AddEventForm client:visible slot="form"/>
+  </Overview>
 </BasicPage>
