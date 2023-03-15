@@ -66,6 +66,12 @@ export function getEventHash (event) {
   return `#${event.id}:${name}`
 }
 
+/** @param {import('./firedb.js').Game} game */
+export function getGameHash (game) {
+  const name = encodeURIComponent(game.name.replaceAll(' ', '_'))
+  return `#${game.gid}:${name}`
+}
+
 /** @param {import('./firedb.js').Event} event @param {import('./firedb.js').UserMap} userList */
 export async function shareEvent (event, userList) {
   const baseURL = window.location.href.split('#')[0]
@@ -100,9 +106,20 @@ export function saveState (key, state) {
   window.localStorage.setItem(key, JSON.stringify(state))
 }
 
-export function getEventIDFromHash () {
+export function getIDFromHash () {
   if (import.meta.env.SSR) return null
   return window.location.hash ? window.location.hash.split(/[#:]/)[1] : null
+}
+
+export function pushHashOnLoad () {
+  const h = window.location.hash
+  window.history.replaceState(null, '', `${window.location.pathname}`)
+  window.history.pushState(null, '', `${window.location.pathname}${h}`)
+}
+
+/** @param {string} h */
+export function pushHash (h) {
+  window.history.pushState(null, '', `${window.location.pathname}${h}`)
 }
 
 /** @template T @param {Event} e @param {string} name @param {T} [detail] */
@@ -119,4 +136,9 @@ export function customListener (node, p) {
   return {
     destroy: () => node.removeEventListener(p.on, /** @type {EventListener} */ (p.do))
   }
+}
+
+/** @type {import('svelte/animate').FlipParams} */
+export const listAnimation = {
+  duration: (dist) => Math.sqrt(dist) * 50
 }

@@ -17,7 +17,6 @@ export async function initMessaging () {
 
   // Display Notification if app is focused
   onMessage(messaging, payload => {
-    // eslint-disable-next-line no-new
     serviceWorkerRegistration.showNotification(
       payload.notification?.title || 'Notification', {
         body: payload.notification?.body,

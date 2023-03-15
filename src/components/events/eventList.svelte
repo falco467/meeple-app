@@ -1,26 +1,31 @@
 <script>
   import { onDestroy } from 'svelte'
   import { flip } from 'svelte/animate'
+  import { scale } from 'svelte/transition'
   import { eventList } from '../../js/eventListStore.js'
   import { removeEvent } from '../../js/firedb.js'
-  import { getErrorMessage, getEventHash, getEventIDFromHash } from '../../js/helpers.js'
+  import { getErrorMessage, getEventHash, getIDFromHash, listAnimation, pushHash, pushHashOnLoad } from '../../js/helpers.js'
   import { enableMessaging, wantMessaging } from '../../js/messaging.js'
   import Icon from '../icon.svelte'
-    import CalSubscribeDialog from './calSubscribeDialog.svelte';
+  import CalSubscribeDialog from './calSubscribeDialog.svelte'
   import EventBox from './eventBox.svelte'
   import EventDetails from './eventDetails.svelte'
 
   let errText = ''
-  let selectedEvent = getEventIDFromHash()
+  let eventID = getIDFromHash()
   let showNotificationButton = wantMessaging()
   let showCalSubscibeDialog = false
 
-  /** @param {string} eventID */
-  async function tryDeleteEvent (eventID) {
+  if (eventID) {
+    pushHashOnLoad()
+  }
+
+  /** @param {string} eID */
+  async function tryDeleteEvent (eID) {
     errText = ''
     try {
-      await removeEvent(eventID)
-      selectedEvent = null
+      await removeEvent(eID)
+      eventID = null
     } catch (err) {
       errText = getErrorMessage(err)
     }
@@ -37,15 +42,21 @@
 
   /** @param {import('../../js/firedb.js').Event?} event */
   function select (event) {
-    selectedEvent = event ? event.id : null
-    const newHash = event ? getEventHash(event) : ''
-    window.history.pushState(null, '', `${window.location.pathname}${newHash}`)
+    if (event == null) {
+      window.history.back()
+      return
+    }
+
+    eventID = event.id
+    pushHash(getEventHash(event))
   }
 
   /** @param {HashChangeEvent} event */
   function onHashChange (event) {
-    selectedEvent = getEventIDFromHash()
+    eventID = getIDFromHash()
   }
+
+  $: selectedEvent = $eventList.find(e => e.id === eventID)
 
   if (!import.meta.env.SSR) {
     window.addEventListener('hashchange', onHashChange)
@@ -62,33 +73,35 @@
 <main class="flex flex-col mb-10">
   {#if errText}<span class="text-red-500">{errText}</span>{/if}
 
-  {#if showNotificationButton}
-    <button class="rounded border p-1 px-2" on:click={tryEnableMessaging}>
-      Enable Notifications
-    </button>
-  {/if}
-
-  {#each $eventList as event (event.id)}
-    <div class="flex flex-col" animate:flip={{ duration: 200 }}>
-      {#if selectedEvent === event.id}
-        <EventDetails {event} on:close={() => select(null)}
-          onRemove={() => tryDeleteEvent(event.id)}/>
-      {:else if !selectedEvent}
+  {#if !eventID}
+    {#each $eventList as event (event.id)}
+      <div class="flex flex-col" animate:flip={listAnimation}>
         <EventBox {event} on:open={() => select(event)}/>
-      {/if}
-    </div>
-  {/each}
-  {#if selectedEvent}
-    {#if !$eventList.some(e => e.id === selectedEvent)}
+      </div>
+    {/each}
+
+    {#if showNotificationButton}
+      <button class="rounded border p-1 px-2" on:click={tryEnableMessaging}>
+        Enable Notifications
+      </button>
+    {/if}
+
+    <button class="rounded border p-1 px-2" on:click={() => { showCalSubscibeDialog = true }}>
+      Calendar Intergration
+    </button>
+  {:else}
+    {#if selectedEvent}
+      <div class="flex flex-col" in:scale={{ start: 0.8, duration: 200 }}>
+        <EventDetails event={selectedEvent} on:close={() => select(null)}
+          onRemove={() => tryDeleteEvent(/** @type {NonNullable<typeof selectedEvent>} */(selectedEvent).id)}/>
+      </div>
+    {:else}
       <span class="text-center my-10">This event does not exist.</span>
     {/if}
 
-    <button class="flex items-center self-end gap-1 rounded border p-1 px-2 mt-2" on:click={() => select(null)}>
+    <button class="flex items-center self-end gap-1 rounded border p-1 px-2 mt-2"
+      on:click={() => select(null)}>
       <Icon i="arrow-left"/> Back to List
-    </button>
-  {:else}
-    <button class="rounded border p-1 px-2" on:click={() => {showCalSubscibeDialog = true}}>
-      Calendar Intergration
     </button>
   {/if}
 

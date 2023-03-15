@@ -47,17 +47,16 @@ export async function bggLoadGame (id) {
   const searchXML = new window.DOMParser().parseFromString(result.text, 'text/xml')
   const it = searchXML.querySelector('item')
 
-  const g = {
+  return {
     gid: id,
     name: getValue(it, 'name'),
     pic: it?.querySelector('thumbnail')?.textContent || '',
     players: `${getValue(it, 'minplayers')}-${getValue(it, 'maxplayers')}`,
     rating: parseFloat(getValue(it, 'average')).toFixed(1),
     recPlayers: calculateRecommendedPlayers(it),
-    votes: {}
+    votes: {},
+    owners: {}
   }
-
-  return g
 }
 /** @param {Element?} it */
 function calculateRecommendedPlayers (it) {

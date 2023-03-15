@@ -92,10 +92,16 @@ export async function saveMessagingToken (token) {
  * @prop {string} recPlayers
  * @prop {string} rating
  * @prop {{[uid:string]:Vote}} votes
+ * @prop {{[uid:string]:OwnerInfo}} owners
  */
 
 /**
  * @typedef Vote
+ * @prop {number} created
+ */
+
+/**
+ * @typedef OwnerInfo
  * @prop {number} created
  */
 
@@ -105,12 +111,13 @@ export function listenGames (listener, errCallback) {
   return onValue(ref(db, 'games'), snap => listener(snap.val()), errCallback)
 }
 
-/** @param {Game} game */
+/** @param {Partial<Game>} game */
 export async function addGame (game) {
   if (!game.gid) {
     throw new Error('No Game-Id specified')
   }
-  await set(ref(db, `games/${game.gid}`), game)
+  delete game.votes
+  await update(ref(db, `games/${game.gid}`), game)
 }
 
 /** @param {string} gid @param {string} uid */
@@ -123,6 +130,18 @@ export async function addVote (gid, uid) {
 /** @param {string} gid @param {string} uid */
 export async function removeVote (gid, uid) {
   await remove(ref(db, `games/${gid}/votes/${uid}`))
+}
+
+/** @param {string} gid @param {string} uid */
+export async function addOwner (gid, uid) {
+  /** @type OwnerInfo */
+  const owner = { created: Date.now() }
+  await set(ref(db, `games/${gid}/owners/${uid}`), owner)
+}
+
+/** @param {string} gid @param {string} uid */
+export async function removeOwner (gid, uid) {
+  await remove(ref(db, `games/${gid}/owners/${uid}`))
 }
 // #endregion
 
@@ -201,7 +220,7 @@ export async function addEventTimes (id, dayTimes, uid) {
 }
 
 /** @returns {Promise<string>} */
-export async function getICalURL() {
+export async function getICalURL () {
   return (await get(ref(db, 'calendar/icsDownloadURL'))).val()
 }
 

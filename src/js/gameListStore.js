@@ -13,7 +13,8 @@ const placeholderList = Array.from(new Array(10), (_, i) => ({
   players: '',
   rating: nbSpace.repeat(6),
   recPlayers: nbSpace.repeat(6),
-  votes: {}
+  votes: {},
+  owners: {}
 }))
 
 /** @type {Game[]} */
@@ -29,7 +30,10 @@ export function load (errCallback) {
       return
     }
     const list = Object.values(gameMap)
-    list.forEach(e => !e.votes && (e.votes = {}))
+    list.forEach(e => {
+      e.votes ??= {}
+      e.owners ??= {}
+    })
     list.sort((a, b) => (
       countVotes(b) - countVotes(a)) ||
       b.rating.localeCompare(a.rating) ||

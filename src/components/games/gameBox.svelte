@@ -1,47 +1,63 @@
 <script>
+    import { createEventDispatcher } from 'svelte'
   import { scale } from 'svelte/transition'
   import { addVote, removeVote, uid } from '../../js/firedb.js'
+  import { getErrorMessage } from '../../js/helpers.js'
   import { userList } from '../../js/userStore.js'
   import Icon from '../icon.svelte'
 
-  /** @type {import('../../js/firedb.js').Game} */
+  /** @typedef {import('../../js/firedb.js').Game} Game */
+
+  /** @type {Game} */
   export let game
-
   export let preview = false
+  let errText = ''
 
-  /** @param {import('../../js/firedb.js').Game} game */
+  /** @param {Game} game */
   function hasMyVote (game) {
     return Object.keys(game.votes).includes(uid)
   }
 
-  /** @param {import('../../js/firedb.js').Game} game */
-  function toggleVote (game) {
-    if (hasMyVote(game)) {
-      removeVote(game.gid, uid)
-    } else {
-      addVote(game.gid, uid)
+  /** @param {Game} game */
+  function tryToggleVote (game) {
+    try {
+      if (hasMyVote(game)) {
+        removeVote(game.gid, uid)
+      } else {
+        addVote(game.gid, uid)
+      }
+    } catch (err) {
+      errText = getErrorMessage(err)
     }
   }
+
+  const dispatch = createEventDispatcher()
 </script>
 
 <article class="flex gap-2 bg-slate-800 rounded p-2">
-  <a class="flex w-20 rounded overflow-hidden flex-shrink-0 self-start"
-    href={`https://boardgamegeek.com/boardgame/${game.gid}`} target="_blank" rel="noreferrer">
+  <button class="flex w-20 rounded overflow-hidden flex-shrink-0 self-start"
+    on:click|stopPropagation={() => dispatch('open')}>
     {#if game.pic}
       <img alt="cover" src={game.pic}>
     {:else}
       <div class="w-20 h-20 bg-slate-900 animate-pulse"></div>
     {/if}
-  </a>
+  </button>
 
   <section class="flex flex-col gap-1 flex-grow min-w-0">
     <h2 class="overflow-hidden text-ellipsis whitespace-nowrap">{game.name}</h2>
 
+    {#if errText}<span class="text-red-500">{errText}</span>{/if}
+
     <ul class="flex gap-2 flex-wrap text-xs">
-      {#each Object.keys(game.votes) as voteUid (voteUid)}
-      <li class="flex gap-1 items-center bg-sky-800 rounded-full p-1 px-2"
+      {#each Object.keys({ ...game.owners, ...game.votes }) as uid (uid)}
+      <li class="flex gap-1 items-center rounded-full p-1 px-2"
+        class:bg-sky-800={game.votes[uid]} class:bg-neutral-700={!game.votes[uid]}
         transition:scale|local>
-        <span class="mb-[0.1em]">{$userList?.[voteUid]?.name || '***'}</span>
+        <span class="mb-[0.1em]">{$userList?.[uid]?.name || '***'}</span>
+        {#if game.owners?.[uid]}
+          <Icon i="cube" title="owner" class="!h-3 !w-3"/>
+        {/if}
       </li>
       {/each}
     </ul>
@@ -58,7 +74,7 @@
     </di>
     <div class="flex-grow"></div>
     {#if !preview}
-      <button on:click={() => toggleVote(game)}>
+      <button on:click={() => tryToggleVote(game)}>
         <Icon i="thumbs-up" class="!w-8 !h-8" stroke={1.5}
           fill={hasMyVote(game) ? 'rgb(100, 116, 139)' : 'none'}/>
       </button>
