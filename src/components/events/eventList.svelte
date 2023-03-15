@@ -10,6 +10,7 @@
   import CalSubscribeDialog from './calSubscribeDialog.svelte'
   import EventBox from './eventBox.svelte'
   import EventDetails from './eventDetails.svelte'
+    import EventExtras from './eventExtras.svelte'
 
   let errText = ''
   let eventID = getIDFromHash()
@@ -90,19 +91,23 @@
       Calendar Intergration
     </button>
   {:else}
-    {#if selectedEvent}
-      <div class="flex flex-col" in:scale={{ start: 0.8, duration: 200 }}>
+    <div class="flex flex-col" in:scale={{ start: 0.8, duration: 200 }}>
+      {#if selectedEvent}
         <EventDetails event={selectedEvent} on:close={() => select(null)}
           onRemove={() => tryDeleteEvent(/** @type {NonNullable<typeof selectedEvent>} */(selectedEvent).id)}/>
-      </div>
-    {:else}
-      <span class="text-center my-10">This event does not exist.</span>
-    {/if}
+      {:else}
+        <span class="text-center my-10">This event does not exist.</span>
+      {/if}
 
-    <button class="flex items-center self-end gap-1 rounded border p-1 px-2 mt-2"
-      on:click={() => select(null)}>
-      <Icon i="arrow-left"/> Back to List
-    </button>
+      <button class="flex items-center self-end gap-1 rounded border p-1 px-2 mt-2"
+        on:click={() => select(null)}>
+        <Icon i="arrow-left"/> Back to List
+      </button>
+
+      {#if selectedEvent}
+        <EventExtras event={selectedEvent} />
+      {/if}
+    </div>
   {/if}
 
   <CalSubscribeDialog bind:visible={showCalSubscibeDialog}/>

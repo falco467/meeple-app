@@ -34,8 +34,8 @@ export function load (errCallback) {
       e.votes ??= {}
       e.owners ??= {}
     })
-    list.sort((a, b) => (
-      countVotes(b) - countVotes(a)) ||
+    list.sort((a, b) =>
+      (countVotes(b) - countVotes(a)) ||
       b.rating.localeCompare(a.rating) ||
       b.gid.localeCompare(a.gid)
     )
@@ -46,7 +46,7 @@ export function load (errCallback) {
 
 /** @param {Game} game */
 function countVotes (game) {
-  return game.votes ? Object.keys(game.votes).length : 0
+  return Object.keys(game.votes).length
 }
 
 export const gameList = {

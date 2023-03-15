@@ -1,6 +1,5 @@
 <script>
-    import { createEventDispatcher } from 'svelte'
-  import { scale } from 'svelte/transition'
+  import { createEventDispatcher } from 'svelte'
   import { addVote, removeVote, uid } from '../../js/firedb.js'
   import { getErrorMessage } from '../../js/helpers.js'
   import { userList } from '../../js/userStore.js'
@@ -11,7 +10,10 @@
   /** @type {Game} */
   export let game
   export let preview = false
+
   let errText = ''
+
+  const dispatch = createEventDispatcher()
 
   /** @param {Game} game */
   function hasMyVote (game) {
@@ -30,8 +32,6 @@
       errText = getErrorMessage(err)
     }
   }
-
-  const dispatch = createEventDispatcher()
 </script>
 
 <article class="flex gap-2 bg-slate-800 rounded p-2">
@@ -52,8 +52,7 @@
     <ul class="flex gap-2 flex-wrap text-xs">
       {#each Object.keys({ ...game.owners, ...game.votes }) as uid (uid)}
       <li class="flex gap-1 items-center rounded-full p-1 px-2"
-        class:bg-sky-800={game.votes[uid]} class:bg-neutral-700={!game.votes[uid]}
-        transition:scale|local>
+        class:bg-sky-800={game.votes[uid]} class:bg-neutral-700={!game.votes[uid]}>
         <span class="mb-[0.1em]">{$userList?.[uid]?.name || '***'}</span>
         {#if game.owners?.[uid]}
           <Icon i="cube" title="owner" class="!h-3 !w-3"/>
