@@ -18,6 +18,7 @@ export function getErrorMessage (err) {
     return 'E-Mail is already registered'
   }
 
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   return err?.message ?? `${err}`
 }
 
@@ -47,18 +48,18 @@ export function getDayList (days) {
   return dl
 }
 
-/** @param {object} o */
+/** @param {object?} o */
 export function isEmpty (o) {
-  return Object.keys(o || {}).length === 0
+  return Object.keys(o ?? {}).length === 0
 }
 
-/** @param {object} o */
+/** @param {object?} o */
 export function hasAny (o) {
-  return Object.keys(o || {}).length > 0
+  return Object.keys(o ?? {}).length > 0
 }
 
-/** @param {() => void} f */
-export const onEnter = (f) => (/** @type {KeyboardEvent} */ e) => e.key === 'Enter' && f()
+/** @param {() => (void|Promise<void>)} f */
+export const onEnter = (f) => (/** @type {KeyboardEvent} */ e) => { e.key === 'Enter' && void f() }
 
 /** @param {import('./firedb.js').Event} event */
 export function getEventHash (event) {
@@ -84,7 +85,7 @@ export async function shareEvent (event, userList) {
   if (navigator.canShare(shareData)) {
     await navigator.share(shareData)
   } else {
-    navigator.clipboard.writeText(url)
+    await navigator.clipboard.writeText(url)
   }
 }
 
@@ -93,7 +94,7 @@ export function getSavedState (key) {
   if (import.meta.env.SSR) return null
   try {
     const it = window.localStorage.getItem(key)
-    return it && JSON.parse(it)
+    return it != null && JSON.parse(it)
   } catch (err) {
     console.error(err)
     return null
@@ -108,7 +109,8 @@ export function saveState (key, state) {
 
 export function getIDFromHash () {
   if (import.meta.env.SSR) return null
-  return window.location.hash ? window.location.hash.split(/[#:]/)[1] : null
+  if (window.location.hash === '') return null
+  return window.location.hash.split(/[#:]/)[1]
 }
 
 export function pushHashOnLoad () {
@@ -134,7 +136,7 @@ export function customDispatch (e, name, detail = undefined) {
 export function customListener (node, p) {
   node.addEventListener(p.on, /** @type {EventListener} */ (p.do))
   return {
-    destroy: () => node.removeEventListener(p.on, /** @type {EventListener} */ (p.do))
+    destroy: () => { node.removeEventListener(p.on, /** @type {EventListener} */ (p.do)) }
   }
 }
 

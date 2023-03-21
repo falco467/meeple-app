@@ -12,11 +12,6 @@
   let showLogin = false
   let showForm = false
 
-  tryLogin()
-
-  let unsubUsers = loadUsers()
-  onDestroy(() => unsubUsers())
-
   function loadUsers () {
     errText = ''
     return userList.load(err => { errText = getErrorMessage(err) })
@@ -30,6 +25,10 @@
     }
   }
 
+  let unsubUsers = loadUsers()
+  onDestroy(() => unsubUsers())
+
+  void tryLogin()
 </script>
 
 <div class="flex flex-col gap-3 self-center w-full max-w-lg">

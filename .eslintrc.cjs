@@ -1,9 +1,5 @@
 module.exports = {
   extends: [
-    'plugin:svelte/recommended',
-    'standard'
+    'eslint-config-astro-svelte-jsdoc-standard',
   ],
-  rules: {
-    'no-self-assign': 'off'
-  }
 }

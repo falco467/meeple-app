@@ -2,7 +2,7 @@ import { app, saveMessagingToken } from './firedb.js'
 import { getMessaging, getToken, isSupported, onMessage } from 'firebase/messaging'
 import { swRegistrationPromise } from './helpers.js'
 
-import.meta.env.SSR || initMessaging()
+import.meta.env.SSR || void initMessaging()
 
 export async function initMessaging () {
   const ok = await isSupported()
@@ -13,11 +13,12 @@ export async function initMessaging () {
   const serviceWorkerRegistration = await swRegistrationPromise
   const token = await getToken(messaging,
     { vapidKey: /** @type {any} */(window).vapidKey, serviceWorkerRegistration })
-  saveMessagingToken(token)
+
+  void saveMessagingToken(token)
 
   // Display Notification if app is focused
   onMessage(messaging, payload => {
-    serviceWorkerRegistration.showNotification(
+    void serviceWorkerRegistration.showNotification(
       payload.notification?.title || 'Notification', {
         body: payload.notification?.body,
         icon: '/apple-touch-icon.png'

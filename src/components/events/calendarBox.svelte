@@ -1,5 +1,5 @@
 <script>
-    import { uid } from '../../js/firedb.js'
+  import { uid } from '../../js/firedb.js'
   import { getDate, toISODay } from '../../js/helpers.js'
   import InputModal from './inputDialog.svelte'
 
@@ -54,7 +54,8 @@
 
   /** @param {Date} d */
   function daysAfterMonday (d) {
-    return (d.getDay() || 7) - 1
+    const diffToMonday = d.getDay() - 1
+    return diffToMonday < 0 ? diffToMonday + 7 : diffToMonday
   }
 
   /** @param {typeof calendarList[0]} d */
@@ -101,6 +102,7 @@
     }
 
     defaultTime = timeInput
+    return Promise.resolve()
   }
 
   /** @param {string} time */
@@ -123,14 +125,14 @@
       class:bg-slate-800={!d.active}
       class:bg-neutral-800={d.active && d.disabled}
       class:bg-emerald-800={d.active && !d.disabled}
-      on:click={() => toggleDay(d)}>
+      on:click={() => { toggleDay(d) }}>
       {d.dom}
     </button>
   {/if}
   {/each}
   <div class="col-span-7 flex gap-1">
     <button class="flex-grow p-1 rounded border" on:click={() => { displayWeeks += 4 }}>Show more</button>
-    <button class="flex-grow p-1 rounded border" on:click={() => showTimeInputModal()}>
+    <button class="flex-grow p-1 rounded border" on:click={() => { showTimeInputModal() }}>
       Defaut Time: {defaultTime}
     </button>
   </div>

@@ -110,7 +110,7 @@
     </h2>
     <div class="flex-grow"></div>
     {#if !editing}
-      <button class="p-2 rounded border" on:click={() => shareEvent(event, $userList)}>
+      <button class="p-2 rounded border" on:click={async () => { await shareEvent(event, $userList) }}>
         <Icon i="share" stroke={2} class="!w-4 !h-4"/>
       </button>
     {/if}
@@ -170,15 +170,15 @@
             {:else}
             <div class="flex items-center">
               <button class="rounded-full p-1" class:bg-sky-800={timeSlot.votes?.[uid]}
-                on:click={() => tryToggleVote(day.date, t, 'basic')}>
+                on:click={async () => { await tryToggleVote(day.date, t, 'basic') }}>
                 <Icon i="thumbs-up" title="ok" stroke={2}/>
               </button>
               <button class="rounded-full p-1" class:bg-amber-700={timeSlot.votes?.[uid]?.isFavorite}
-                on:click={() => tryToggleVote(day.date, t, 'favorite')}>
+                on:click={async () => { await tryToggleVote(day.date, t, 'favorite') }}>
                 <Icon i="star" title="favorite" stroke={2}/>
               </button>
               <button class="rounded-full p-1" class:bg-emerald-800={timeSlot.votes?.[uid]?.isHome}
-                on:click={() => tryToggleVote(day.date, t, 'home')}>
+                on:click={async () => { await tryToggleVote(day.date, t, 'home') }}>
                 <Icon i="home" title="host" stroke={2}/>
               </button>
             </div>
@@ -186,7 +186,7 @@
           </section>
 
           <ul class="flex gap-2 flex-wrap text-xs">
-            {#each Object.entries(timeSlot.votes || {}) as [voter, vote] (voter)}
+            {#each Object.entries(timeSlot.votes) as [voter, vote] (voter)}
               <li class="flex gap-1 items-center rounded-full p-1 px-2"
                 class:bg-sky-800={!vote.isFavorite} class:bg-amber-700={vote.isFavorite}>
                 <span >{$userList[voter]?.name || '***'}</span>

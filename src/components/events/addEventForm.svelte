@@ -44,7 +44,7 @@
       throw new Error('Only between 2 and 10 characters allowed')
     }
 
-    if (timeInputOrgValue) {
+    if (timeInputOrgValue != null) {
       inputModalDay[timeInput] = inputModalDay[timeInputOrgValue]
       delete inputModalDay[timeInputOrgValue]
     } else {
@@ -55,6 +55,7 @@
     }
 
     event = event
+    return Promise.resolve()
   }
 
   /** @param {typeof event.days['']} day @param {string} time */
@@ -71,7 +72,7 @@
       if (event.name.length < 4) {
         throw new Error('Event Name must at least have 4 characters')
       }
-      if (!Object.keys(event.days).length) {
+      if (Object.keys(event.days).length === 0) {
         throw new Error('Event needs at least one date')
       }
       await addEvent(event)
@@ -92,9 +93,9 @@
   <CalendarBox bind:event />
 
   <EventDetails bind:event editing
-    on:removeTime={e => removeTime(e.detail.day, e.detail.time)}
-    on:addTime={e => showTimeInputModal(e.detail.day)}
-    on:editTime={e => showTimeInputModal(e.detail.day, e.detail.time)}/>
+    on:removeTime={e => { removeTime(e.detail.day, e.detail.time) }}
+    on:addTime={e => { showTimeInputModal(e.detail.day) }}
+    on:editTime={e => { showTimeInputModal(e.detail.day, e.detail.time) }}/>
 
   {#if errText}<span class="text-red-500">{errText}</span>{/if}
 
@@ -103,7 +104,7 @@
       class:invisible={event == null} on:click={tryAddEvent}>
       {#if loading}<Icon i="cube" class="animate-spin" />{:else}Add Event{/if}
     </button>
-    <button class="flex-grow bg-slate-800 rounded px-5 py-3" on:click={e => customDispatch(e, 'close')}>
+    <button class="flex-grow bg-slate-800 rounded px-5 py-3" on:click={e => { customDispatch(e, 'close') }}>
       Close
     </button>
   </div>

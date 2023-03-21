@@ -19,7 +19,7 @@ const db = /** @type {ReturnType<getDatabase>} */ (import.meta.env.SSR || getDat
 
 const uidStorageKey = 'meeple:uid'
 
-export let uid = getSavedState(uidStorageKey) || ''
+export let uid = getSavedState(uidStorageKey) ?? ''
 
 export async function checkLogin () {
   if (import.meta.env.SSR) return
@@ -31,7 +31,7 @@ export async function checkLogin () {
       resolve(user)
     })
   })
-  if (!user) return false
+  if (user == null) return false
 
   uid = user.uid
   saveState(uidStorageKey, uid)
@@ -61,8 +61,8 @@ export async function createAccount (email, password, name) {
 
 /** @param {(v:UserMap) => void} listener @param {(err: Error) => void} errCallback */
 export function listenUsers (listener, errCallback) {
-  if (import.meta.env.SSR) return () => {}
-  return onValue(ref(db, 'users'), snap => listener(snap.val()), errCallback)
+  if (import.meta.env.SSR) return () => { /* do nothing */ }
+  return onValue(ref(db, 'users'), snap => { listener(snap.val()) }, errCallback)
 }
 
 /** @param {string} uid @param {string} name */
@@ -107,13 +107,13 @@ export async function saveMessagingToken (token) {
 
 /** @param {(v:GameMap) => void} listener @param {(err: Error) => void} errCallback */
 export function listenGames (listener, errCallback) {
-  if (import.meta.env.SSR) return () => {}
-  return onValue(ref(db, 'games'), snap => listener(snap.val()), errCallback)
+  if (import.meta.env.SSR) return () => { /* do nothing */ }
+  return onValue(ref(db, 'games'), snap => { listener(snap.val()) }, errCallback)
 }
 
 /** @param {Partial<Game>} game */
 export async function addGame (game) {
-  if (!game.gid) {
+  if (game.gid == null) {
     throw new Error('No Game-Id specified')
   }
   delete game.votes
@@ -166,13 +166,13 @@ export async function removeOwner (gid, uid) {
 
 /** @param {(v:EventMap) => void} listener @param {(err: Error) => void} errCallback */
 export function listenEvents (listener, errCallback) {
-  return onValue(ref(db, 'events'), snap => listener(snap.val()), errCallback)
+  return onValue(ref(db, 'events'), snap => { listener(snap.val()) }, errCallback)
 }
 
 /** @param {Event} event */
 export async function addEvent (event) {
   const eRef = push(ref(db, 'events'))
-  if (!eRef.key) throw new Error('could not push Event - key is null')
+  if (eRef.key == null) throw new Error('could not push Event - key is null')
   event.id = eRef.key
   await set(eRef, event)
 }
@@ -219,7 +219,7 @@ export async function addEventTimes (id, dayTimes, uid) {
   await update(ref(db, `events/${id}/days`), updates)
 }
 
-/** @returns {Promise<string>} */
+/** @returns {Promise<string?>} */
 export async function getICalURL () {
   return (await get(ref(db, 'calendar/icsDownloadURL'))).val()
 }

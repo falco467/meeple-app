@@ -14,15 +14,14 @@
   async function loadICSURL () {
     isLoading = true
     try {
-      icalURL = await getICalURL()
-      if (!icalURL) throw new Error('calendar is currently not available.')
+      const url = await getICalURL()
+      if (url == null) throw new Error('calendar is currently not available.')
+      icalURL = url
     } catch (err) {
       errText = getErrorMessage(err)
     }
     isLoading = false
   }
-
-  loadICSURL()
 
   async function copyURL () {
     try {
@@ -32,6 +31,8 @@
       errText = getErrorMessage(err)
     }
   }
+
+  void loadICSURL()
 </script>
 
 <Dialog bind:visible confirmClass="hidden">

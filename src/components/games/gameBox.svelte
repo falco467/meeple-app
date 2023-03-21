@@ -21,12 +21,12 @@
   }
 
   /** @param {Game} game */
-  function tryToggleVote (game) {
+  async function tryToggleVote (game) {
     try {
       if (hasMyVote(game)) {
-        removeVote(game.gid, uid)
+        await removeVote(game.gid, uid)
       } else {
-        addVote(game.gid, uid)
+        await addVote(game.gid, uid)
       }
     } catch (err) {
       errText = getErrorMessage(err)

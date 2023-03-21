@@ -1,5 +1,6 @@
 <script>
   import { addOwner, removeOwner, uid } from '../../js/firedb.js'
+  import { getErrorMessage } from '../../js/helpers.js'
   import Icon from '../icon.svelte'
   import GameBox from './gameBox.svelte'
 
@@ -7,7 +8,7 @@
 
   /** @type {Game} */
   export let game
-  const errText = ''
+  let errText = ''
 
   function openBGG () {
     window.open(`https://boardgamegeek.com/boardgame/${game.gid}`, '_blank', 'noreferrer')
@@ -18,11 +19,15 @@
     return Object.keys(game.owners).includes(uid)
   }
 
-  function tryToggleOwner () {
-    if (hasMeAsOwner(game)) {
-      removeOwner(game.gid, uid)
-    } else {
-      addOwner(game.gid, uid)
+  async function tryToggleOwner () {
+    try {
+      if (hasMeAsOwner(game)) {
+        await removeOwner(game.gid, uid)
+      } else {
+        await addOwner(game.gid, uid)
+      }
+    } catch (err) {
+      errText = getErrorMessage(err)
     }
   }
 </script>

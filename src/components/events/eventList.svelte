@@ -10,7 +10,7 @@
   import CalSubscribeDialog from './calSubscribeDialog.svelte'
   import EventBox from './eventBox.svelte'
   import EventDetails from './eventDetails.svelte'
-    import EventExtras from './eventExtras.svelte'
+  import EventExtras from './eventExtras.svelte'
 
   let errText = ''
   let eventID = getIDFromHash()
