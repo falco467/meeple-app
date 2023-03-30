@@ -1,5 +1,5 @@
 <script>
-  import { onDestroy } from 'svelte'
+  import { onDestroy, tick } from 'svelte'
   import { flip } from 'svelte/animate'
   import { scale } from 'svelte/transition'
   import { eventList } from '../../js/eventListStore.js'
@@ -42,7 +42,7 @@
   }
 
   /** @param {import('../../js/firedb.js').Event?} event */
-  function select (event) {
+  async function select (event) {
     if (event == null) {
       window.history.back()
       return
@@ -50,6 +50,8 @@
 
     eventID = event.id
     pushHash(getEventHash(event))
+    await tick()
+    window.scrollTo(0, 0)
   }
 
   /** @param {HashChangeEvent} event */

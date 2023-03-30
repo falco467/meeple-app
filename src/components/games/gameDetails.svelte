@@ -1,4 +1,5 @@
 <script>
+  import { createEventDispatcher } from 'svelte'
   import { addOwner, removeOwner, uid } from '../../js/firedb.js'
   import { getErrorMessage } from '../../js/helpers.js'
   import Icon from '../icon.svelte'
@@ -9,6 +10,8 @@
   /** @type {Game} */
   export let game
   let errText = ''
+
+  const dispatch = createEventDispatcher()
 
   function openBGG () {
     window.open(`https://boardgamegeek.com/boardgame/${game.gid}`, '_blank', 'noreferrer')
@@ -32,18 +35,24 @@
   }
 </script>
 
-<article class="flex flex-col gap-1">
+<article class="flex flex-col gap-2">
   {#if errText}<span class="text-red-500">{errText}</span>{/if}
 
   <GameBox {game} on:open={() => openBGG()}/>
 
-  <button class="flex items-center self-start gap-1 rounded border p-1 px-2 mt-2 -mb-11"
-    on:click={tryToggleOwner}>
-    <Icon i="cube"/>
-    {#if hasMeAsOwner(game)}
-      Remove Ownership
-    {:else}
-      Set Ownership
-    {/if}
-  </button>
+  <div class="flex gap-2 justify-between">
+    <button class="flex items-center gap-1 rounded border p-1 px-2"
+      on:click={tryToggleOwner}>
+      <Icon i="cube"/>
+      {#if hasMeAsOwner(game)}
+        Remove Ownership
+      {:else}
+        Set Ownership
+      {/if}
+    </button>
+    <button class="flex items-center gap-1 rounded border p-1 px-2"
+      on:click={() => dispatch('close')}>
+      <Icon i="arrow-left"/> Back to List
+    </button>
+  </div>
 </article>

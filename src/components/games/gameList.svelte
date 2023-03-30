@@ -10,6 +10,7 @@
 
   let errText = ''
   let gameID = getIDFromHash()
+  let closing = false
 
   if (gameID) {
     pushHashOnLoad()
@@ -18,6 +19,7 @@
   /** @param {import('../../js/firedb.js').Game?} game */
   function select (game) {
     if (game == null) {
+      closing = true
       window.history.back()
       return
     }
@@ -29,6 +31,7 @@
   /** @param {HashChangeEvent} event */
   function onHashChange (event) {
     gameID = getIDFromHash()
+    closing = false
   }
 
   $: selectedGame = $gameList.find(g => g.gid === gameID)
@@ -55,17 +58,18 @@
     {/each}
   {:else}
     {#if selectedGame}
-      <div class="flex flex-col" in:scale={{ start: 0.8, duration: 200 }}>
-        <GameDetails game={selectedGame} />
+      <div class="flex flex-col transition-transform duration-500"
+        in:scale={{ start: 0.8, duration: 200 }} class:scale-50={closing}>
+        <GameDetails game={selectedGame} on:close={() => select(null)}/>
       </div>
     {:else}
       <span class="text-center my-10">This game does not exist.</span>
-    {/if}
 
-    <button class="flex items-center self-end gap-1 rounded border p-1 px-2 mt-2"
-      on:click={() => select(null)}>
-      <Icon i="arrow-left"/> Back to List
-    </button>
+      <button class="flex items-center self-end gap-1 rounded border p-1 px-2 mt-2"
+        on:click={() => select(null)}>
+        <Icon i="arrow-left"/> Back to List
+      </button>
+    {/if}
   {/if}
 
   <span>Details provided by BoardGameGeek</span>

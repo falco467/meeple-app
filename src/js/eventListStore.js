@@ -19,7 +19,11 @@ export function load (errCallback) {
       return
     }
     const list = Object.values(eventMap)
-    list.forEach(e => !e.days && (e.days = {}))
+    list.forEach(e => {
+      e.days ??= {}
+      Object.values(e.days).forEach(d =>
+        Object.values(d).forEach(t => { t.votes ??= {} }))
+    })
     list.sort((a, b) => (
       bToN(isEventOver(a)) - bToN(isEventOver(b))) ||
       getDay(a).localeCompare(getDay(b)) ||

@@ -1,13 +1,16 @@
 <script>
+    import { onDestroy } from 'svelte'
   import { flip } from 'svelte/animate'
   import { gameList } from '../../js/gameListStore.js'
-  import { listAnimation } from '../../js/helpers.js'
+  import { getErrorMessage, listAnimation } from '../../js/helpers.js'
   import GameBox from '../games/gameBox.svelte'
 
   /** @typedef {import('../../js/firedb.js').Event} Event */
 
   /** @type {Event} */
   export let event
+
+  let errText = ''
 
   /** @param {Event} event */
   function isEventOver (event) {
@@ -29,7 +32,6 @@
   /** @param {import('../../js/firedb.js').Game[]} gl @param {Event} event */
   function getRecommendedList (gl, event) {
     const ps = getParticipants(event)
-    console.log(ps)
     gl = gl.filter(g =>
       Object.keys(g.owners).some(o => ps.has(o)) && fitsPlayerCount(g, ps))
     gl.sort((a, b) =>
@@ -60,9 +62,15 @@
     return rplayers.includes(`${uids.size}`)
   }
 
-  $: filteredList = getRecommendedList($gameList, event)
+  const unsubGame = gameList.load(err => { errText = getErrorMessage(err) })
+    onDestroy(() => {
+      unsubGame()
+    })
 
+  $: filteredList = getRecommendedList($gameList, event)
 </script>
+
+{#if errText}<span class="text-red-500">{errText}</span>{/if}
 
 {#if !isEventOver(event)}
 <article class="flex flex-col gap-1 mt-4">
