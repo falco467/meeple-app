@@ -1,12 +1,14 @@
 <script>
   import { customDispatch, getErrorMessage, onEnter } from '../../js/helpers.js'
-  import { addGame } from '../../js/firedb.js'
+  import { addGame, uid } from '../../js/firedb.js'
   import { bggLoadGame, bggSearchGame } from '../../js/bggSearch.js'
   import Icon from '../icon.svelte'
   import GameBox from './gameBox.svelte'
 
+  /** @typedef {import('../../js/firedb.js').Game} Game */
+
   let searchText = ''
-  /** @type {import('../../js/firedb.js').Game?} */
+  /** @type {Game?} */
   let game = null
 
   /** @type {import('../../js/bggSearch.js').SearchResult[]?} */
@@ -61,9 +63,20 @@
     loading = false
   }
 
+  function toggleOwner () {
+    if (game == null) return
+
+    if (game.owners[uid] == null) {
+      game.owners[uid] = { created: Date.now() }
+    } else {
+      delete game.owners[uid]
+      game = game
+    }
+  }
+
 </script>
 
-<div class="w-64 flex flex-col gap-5 items-stretch self-center mt-5">
+<div class="max-w-7xl flex flex-col gap-5 items-stretch self-center mt-5">
 
   <div class="flex items-stretch rounded focus-within:outline">
     <!-- svelte-ignore a11y-autofocus -->
@@ -84,6 +97,14 @@
 
   {#if game}
     <GameBox {game} preview/>
+
+    <button class="flex items-center gap-2 rounded border p-1 pr-2 bg-slate-800"
+      on:click={() => toggleOwner()}>
+      <span class:text-opacity-0={game.owners[uid] == null}>
+        <Icon i="check" class="!w-4 !h-4 border"/>
+      </span>
+      I own this game
+    </button>
 
   {:else if searchResults != null}
     <main class="flex flex-col gap-2 items-stretch">

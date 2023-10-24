@@ -1,8 +1,8 @@
 import { randomUUID } from 'crypto'
-import admin from 'firebase-admin'
 import { onValueWritten } from 'firebase-functions/v2/database'
 import { createEvents } from 'ics'
 import { defaultDBOptions } from './helpers.mjs'
+import { initializeApp } from 'firebase-admin/app'
 
 /**
  * @typedef Event
@@ -65,9 +65,9 @@ export const updateicsonchange = onValueWritten({
 
   icsData = icsData.replace(/(?<=X-PUBLISHED-TTL:).+/, 'PT5M')
 
-  if (!app) app = admin.initializeApp()
+  if (!app) app = initializeApp()
 
-  const bucket = admin.storage().bucket()
+  const bucket = app.getStorage().bucket()
   const eventFile = bucket.file(eventFileName)
 
   const token = await getDownloadToken(eventFile)

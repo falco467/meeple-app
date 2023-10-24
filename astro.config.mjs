@@ -12,6 +12,9 @@ export default defineConfig({
   build: {
     format: 'file'
   },
+  server: {
+    port: 443
+  },
   vite: {
     server: {
       https: {

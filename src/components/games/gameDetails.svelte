@@ -1,15 +1,20 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { addOwner, removeOwner, uid } from '../../js/firedb.js'
   import { getErrorMessage } from '../../js/helpers.js'
   import Icon from '../icon.svelte'
   import GameBox from './gameBox.svelte'
+  import Dialog from '../dialog.svelte'
+  import { userList } from '../../js/userStore.js'
+  import { updateOwners } from '../../js/firedb.js'
 
   /** @typedef {import('../../js/firedb.js').Game} Game */
 
   /** @type {Game} */
   export let game
   let errText = ''
+  let ownerModalVisible = false
+  /** @type {Game['owners']} */
+  let ownerMap = {}
 
   const dispatch = createEventDispatcher()
 
@@ -17,22 +22,36 @@
     window.open(`https://boardgamegeek.com/boardgame/${game.gid}`, '_blank', 'noreferrer')
   }
 
-  /** @param {Game} game */
-  function hasMeAsOwner (game) {
-    return Object.keys(game.owners).includes(uid)
+  function openOwnerModal () {
+    ownerMap = { ...game.owners }
+    ownerModalVisible = true
   }
 
-  async function tryToggleOwner () {
+  /** @param {string} uid */
+  function toggleOwner (uid) {
+    if (ownerMap[uid] == null) {
+      ownerMap[uid] = { created: Date.now() }
+    } else {
+      delete ownerMap[uid]
+      ownerMap = ownerMap
+    }
+  }
+
+  async function saveOwners () {
+    errText = ''
+    const ol = Object.keys(ownerMap).sort()
+    const gol = Object.keys(game.owners).sort()
+    if (ol.length === gol.length && ol.every((v, i) => v === gol[i])) {
+      return
+    }
     try {
-      if (hasMeAsOwner(game)) {
-        await removeOwner(game.gid, uid)
-      } else {
-        await addOwner(game.gid, uid)
-      }
+      await updateOwners(game.gid, ownerMap)
     } catch (err) {
       errText = getErrorMessage(err)
     }
   }
+
+  $: users = Object.entries($userList).map(([uid, user]) => ({ uid, name: user.name })).sort((a, b) => a.name.localeCompare(b.name))
 </script>
 
 <article class="flex flex-col gap-2">
@@ -42,17 +61,25 @@
 
   <div class="flex gap-2 justify-between">
     <button class="flex items-center gap-1 rounded border p-1 px-2"
-      on:click={tryToggleOwner}>
-      <Icon i="cube"/>
-      {#if hasMeAsOwner(game)}
-        Remove Ownership
-      {:else}
-        Set Ownership
-      {/if}
+      on:click={() => openOwnerModal()}>
+      <Icon i="cube"/> Set Owners
     </button>
     <button class="flex items-center gap-1 rounded border p-1 px-2"
       on:click={() => dispatch('close')}>
       <Icon i="arrow-left"/> Back to List
     </button>
   </div>
+
+  <Dialog bind:visible={ownerModalVisible} confirmText="Set Owners" onConfirm={saveOwners}>
+    <span>Who owns this game?</span>
+    {#each users as user (user.uid)}
+      <button class="flex items-center gap-2 rounded border p-1 pr-2 bg-slate-800"
+      on:click={() => { toggleOwner(user.uid) }}>
+      <span class:text-opacity-0={ownerMap[user.uid] == null}>
+        <Icon i="check" class="!w-4 !h-4 border"/>
+      </span>
+      {user.name}
+    </button>
+    {/each}
+  </Dialog>
 </article>

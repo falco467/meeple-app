@@ -1,24 +1,25 @@
-import { https, region } from 'firebase-functions'
+import { HttpsError, onCall } from 'firebase-functions/v2/https'
 import fetch from 'node-fetch'
 
 const bggXmlBaseUrl = 'https://boardgamegeek.com/xmlapi2/'
 
-export const bggSearchGame = region('europe-west1').runWith({
-  enforceAppCheck: true // Requests without valid App Check tokens will be rejected.
-}).https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new https.HttpsError('unauthenticated', 'plase login')
+export const bggSearch = onCall({
+  enforceAppCheck: true,
+  region: 'europe-west1'
+}, async (req) => {
+  if (!req.auth) {
+    throw new HttpsError('unauthenticated', 'plase login')
   }
-  if (!context.app) {
-    throw new https.HttpsError('failed-precondition', 'Google recaptcha app-check is missing')
+  if (!req.app) {
+    throw new HttpsError('failed-precondition', 'Google recaptcha app-check is missing')
   }
 
   let resp
 
-  if (data.id) {
-    resp = await fetch(`${bggXmlBaseUrl}/thing?stats=1&id=${encodeURIComponent(data.id)}`)
+  if (req.data.id) {
+    resp = await fetch(`${bggXmlBaseUrl}/thing?stats=1&id=${encodeURIComponent(req.data.id)}`)
   } else {
-    resp = await fetch(`${bggXmlBaseUrl}/search?type=boardgame&query=${encodeURIComponent(data.name)}`)
+    resp = await fetch(`${bggXmlBaseUrl}/search?query=${encodeURIComponent(req.data.name)}`)
   }
 
   return {

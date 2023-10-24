@@ -2,19 +2,16 @@
 /// <reference lib="webworker" />
 
 import { firebaseConfig } from './firebaseConfig.js'
-// @ts-ignore ts does not recognize static import
+// @ts-expect-error ts does not recognize static import
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js'
-// @ts-ignore ts does not recognize static import
+// @ts-expect-error ts does not recognize static import
 import { getMessaging } from 'https://www.gstatic.com/firebasejs/9.16.0/firebase-messaging-sw.js'
 
 const self = /** @type {ServiceWorkerGlobalScope} */(/** @type {unknown} */(globalThis.self))
 
 // enable Service Worker immediately
-self.addEventListener('install', e => self.skipWaiting())
+self.addEventListener('install', () => { void self.skipWaiting() })
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()))
-
-// enable installation as PWA
-self.addEventListener('fetch', event => {})
 
 // Firebase will display background Notifications automatically
 const app = initializeApp(firebaseConfig)

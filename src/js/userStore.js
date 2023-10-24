@@ -14,6 +14,7 @@ const { set, subscribe } = writable(users)
 /** @param {(err: Error) => void} errCallback */
 export function load (errCallback) {
   return listenUsers((/** @type {UserMap} */ u) => {
+    Object.keys(u).forEach(k => u[k].verified || delete u[k])
     set(u)
     saveState(storageKey, u)
   }, errCallback)

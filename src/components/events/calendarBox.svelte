@@ -1,7 +1,9 @@
 <script>
+  import { onDestroy } from 'svelte'
   import { uid } from '../../js/firedb.js'
-  import { getDate, toISODay } from '../../js/helpers.js'
+  import { getDate, getErrorMessage, toISODay } from '../../js/helpers.js'
   import InputModal from './inputDialog.svelte'
+  import { eventList } from '../../js/eventListStore.js'
 
   /** @type {import('../../js/firedb.js').Event} */
   export let event
@@ -12,6 +14,7 @@
 
   let displayWeeks = 4
   let defaultTime = 'evening'
+  let errText = ''
 
   /** @type {{isFiller?: boolean, isMonth?: boolean, label?: string, date?: string,
    * dom?: number, isWeekend?:boolean, active?:boolean, disabled?:boolean, isInset?: boolean }[]} */
@@ -110,10 +113,28 @@
     Object.keys(toAddList).forEach(k => { toAddList[k] = time })
   }
 
+  if (!import.meta.env.SSR) {
+    const unsubEvents = eventList.load(err => { errText = getErrorMessage(err) })
+    onDestroy(() => {
+      unsubEvents()
+    })
+  }
+
+  /** @param {typeof calendarList[0]} d */
+  function hasEvent (d) {
+    return $eventList.find(e => Object.keys(e.days).find(k => k === d.date))
+  }
+
+  /** @param {typeof calendarList[0]} d */
+  function hasConfirmedEvent (d) {
+    return $eventList.find(e => e.selectedDay === d.date)
+  }
+
   $: updateToAddListTime(defaultTime)
 </script>
 
 <span class="-mb-3">Please select avaiable days:</span>
+{#if errText}<span class="text-red-500">{errText}</span>{/if}
 <article class="grid grid-cols-7 gap-2 border rounded p-2">
   {#each calendarList as d}
   {#if d.isMonth}
@@ -121,12 +142,17 @@
   {:else if d.isFiller}
     <span></span>
   {:else}
-    <button class="rounded p-2" class:text-amber-700={d.isWeekend}
+    <button class="rounded p-2 relative" class:text-amber-700={d.isWeekend}
       class:bg-slate-800={!d.active}
       class:bg-neutral-800={d.active && d.disabled}
       class:bg-emerald-800={d.active && !d.disabled}
       on:click={() => { toggleDay(d) }}>
       {d.dom}
+      {#if hasConfirmedEvent(d)}
+        <div class="absolute top-1 left-1 bg-amber-900 rounded-full w-4 text-xs text-white">!</div>
+      {:else if hasEvent(d)}
+        <div class="absolute top-1 left-1 bg-slate-700 rounded-full w-4 text-xs text-white">?</div>
+      {/if}
     </button>
   {/if}
   {/each}

@@ -44,7 +44,9 @@
       throw new Error('Only between 2 and 10 characters allowed')
     }
 
-    if (timeInputOrgValue != null) {
+    console.log(event, timeInputOrgValue, timeInput)
+
+    if (timeInputOrgValue !== '') {
       inputModalDay[timeInput] = inputModalDay[timeInputOrgValue]
       delete inputModalDay[timeInputOrgValue]
     } else {
@@ -72,8 +74,16 @@
       if (event.name.length < 4) {
         throw new Error('Event Name must at least have 4 characters')
       }
-      if (Object.keys(event.days).length === 0) {
+      const days = Object.keys(event.days)
+      if (days.length === 0) {
         throw new Error('Event needs at least one date')
+      }
+      if (days.length === 1) {
+        const times = Object.keys(event.days[days[0]])
+        if (times.length === 1) {
+          event.selectedDay = days[0]
+          event.selectedTime = times[0]
+        }
       }
       await addEvent(event)
       customDispatch(e, 'close')
@@ -82,7 +92,6 @@
     }
     loading = false
   }
-
 </script>
 
 <div class="flex flex-col gap-5 items-stretch mt-5">

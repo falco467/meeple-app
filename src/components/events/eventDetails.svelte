@@ -110,7 +110,7 @@
     </h2>
     <div class="flex-grow"></div>
     {#if !editing}
-      <button class="p-2 rounded border" on:click={async () => { await shareEvent(event, $userList) }}>
+      <button class="p-2 rounded border" on:click={async () => { await shareEvent(event) }}>
         <Icon i="share" stroke={2} class="!w-4 !h-4"/>
       </button>
     {/if}
@@ -163,7 +163,7 @@
             {#if selectionInProgress}
               <button class="flex items-center gap-1 rounded border p-1 pr-2"
                 on:click={() => { event.selectedDay = day.date; event.selectedTime = t }}>
-                <span class:text-slate-800={!isSelected(day.date, t)}>
+                <span class:text-transparent={!isSelected(day.date, t)}>
                   <Icon i="check" class="!w-4 !h-4 border"/>
                 </span>Select
               </button>

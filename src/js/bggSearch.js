@@ -7,7 +7,7 @@ const functions = /** @type {ReturnType<getFunctions>} */ (import.meta.env.SSR |
 /** @typedef {{ok: boolean, status: number, text: string}} BggCallResult */
 
 const bggSearchGameFunc = /** @type {(r:BggCallRequest) => Promise<{data:BggCallResult}>} */
-  (import.meta.env.SSR || httpsCallable(functions, 'bggSearchGame'))
+  (import.meta.env.SSR || httpsCallable(functions, 'bggSearch'))
 
 /** @typedef {{id: string, name: string, year: string}} SearchResult */
 
@@ -20,11 +20,14 @@ export async function bggSearchGame (name) {
 
   const searchXML = new window.DOMParser().parseFromString(result.text, 'text/xml')
 
-  const list = Array.from(searchXML.querySelectorAll('item')).map(node => ({
+  let list = Array.from(searchXML.querySelectorAll('item')).map(node => ({
     id: node.id,
+    type: node.getAttribute('type'),
     name: node.querySelector('name')?.getAttribute('value') || '',
     year: node.querySelector('yearpublished')?.getAttribute('value') || ''
   }))
+
+  list = list.filter(b => !(b.type === 'boardgameexpansion' || list.find(x => b.id === x.id && x.type === 'boardgameexpansion')))
 
   list.sort((a, b) => {
     const aMatch = a.name.toLowerCase().includes(name.toLowerCase())

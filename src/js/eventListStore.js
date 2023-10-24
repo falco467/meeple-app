@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store'
+import { isLoading } from './isLoadingStore.js'
 import { listenEvents } from './firedb.js'
 import { getSavedState, saveState, toISODay } from './helpers.js'
 
@@ -13,6 +14,7 @@ const { set, subscribe } = writable(gl)
 
 /** @param {(err: Error) => void} errCallback */
 export function load (errCallback) {
+  isLoading.set(true)
   return listenEvents(eventMap => {
     if (!eventMap) {
       set([])
@@ -29,6 +31,7 @@ export function load (errCallback) {
       getDay(a).localeCompare(getDay(b)) ||
       b.created - a.created)
     set(list)
+    isLoading.set(false)
     saveState(storageKey, list)
   }, errCallback)
 }

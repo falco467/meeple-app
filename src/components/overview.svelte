@@ -5,6 +5,7 @@
   import { checkLogin, uid } from '../js/firedb.js'
   import Icon from './icon.svelte'
   import Login from './login.svelte'
+  import { isLoading } from '../js/isLoadingStore.js'
 
   export let kind = 'Game'
 
@@ -40,10 +41,15 @@
         {$userList?.[uid]?.name || ''}
       </div>
     {/if}
-    <h1 class="text-xl flex items-center gap-1 mx-1 flex-shrink overflow-hidden">
+    <h1 class="relative text-xl flex items-center gap-1 mx-1 flex-shrink overflow-hidden">
       <span class="max-[299px]:hidden">Meeple</span>
       <img src="favicon-32x32.png" aria-hidden="true" alt="a red die">
       <span class="max-[359px]:hidden">CGN</span>
+      {#if $isLoading}
+        <div class="absolute inset-0 flex justify-center items-center">
+          <span class="bg-slate-800 rounded-lg p-1 px-2 text-sm text-white">updating</span>
+        </div>
+      {/if}
     </h1>
     {#if !showLogin}
       <button class="flex items-center gap-1 rounded border pl-1 pr-2 py-1 shadow"

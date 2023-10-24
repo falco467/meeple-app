@@ -57,6 +57,7 @@ export async function createAccount (email, password, name) {
 /**
  * @typedef UserInfo
  * @prop {string} name
+ * @prop {boolean} verified
  */
 
 /** @param {(v:UserMap) => void} listener @param {(err: Error) => void} errCallback */
@@ -132,17 +133,11 @@ export async function removeVote (gid, uid) {
   await remove(ref(db, `games/${gid}/votes/${uid}`))
 }
 
-/** @param {string} gid @param {string} uid */
-export async function addOwner (gid, uid) {
-  /** @type OwnerInfo */
-  const owner = { created: Date.now() }
-  await set(ref(db, `games/${gid}/owners/${uid}`), owner)
+/** @param {string} gid @param {Game['owners']} owners */
+export async function updateOwners (gid, owners) {
+  await set(ref(db, `games/${gid}/owners`), owners)
 }
 
-/** @param {string} gid @param {string} uid */
-export async function removeOwner (gid, uid) {
-  await remove(ref(db, `games/${gid}/owners/${uid}`))
-}
 // #endregion
 
 // #region Event

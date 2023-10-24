@@ -2,9 +2,10 @@
   import { onDestroy, tick } from 'svelte'
   import { flip } from 'svelte/animate'
   import { scale } from 'svelte/transition'
-  import { eventList } from '../../js/eventListStore.js'
+  import { eventList, isEventOver } from '../../js/eventListStore.js'
   import { removeEvent } from '../../js/firedb.js'
   import { getErrorMessage, getEventHash, getIDFromHash, listAnimation, pushHash, pushHashOnLoad } from '../../js/helpers.js'
+  import { isLoading } from '../../js/isLoadingStore.js'
   import { enableMessaging, wantMessaging } from '../../js/messaging.js'
   import Icon from '../icon.svelte'
   import CalSubscribeDialog from './calSubscribeDialog.svelte'
@@ -54,12 +55,13 @@
     window.scrollTo(0, 0)
   }
 
-  /** @param {HashChangeEvent} event */
-  function onHashChange (event) {
+  function onHashChange () {
     eventID = getIDFromHash()
   }
 
   $: selectedEvent = $eventList.find(e => e.id === eventID)
+  $: pastEvents = $eventList.filter(e => isEventOver(e)).reverse()
+  $: futureEvents = $eventList.filter(e => !isEventOver(e))
 
   if (!import.meta.env.SSR) {
     window.addEventListener('hashchange', onHashChange)
@@ -73,11 +75,11 @@
 
 </script>
 
-<main class="flex flex-col mb-10">
+<main class="flex flex-col gap-2 mb-10">
   {#if errText}<span class="text-red-500">{errText}</span>{/if}
 
   {#if !eventID}
-    {#each $eventList as event (event.id)}
+    {#each futureEvents as event (event.id)}
       <div class="flex flex-col" animate:flip={listAnimation}>
         <EventBox {event} on:open={() => select(event)}/>
       </div>
@@ -92,11 +94,21 @@
     <button class="rounded border p-1 px-2" on:click={() => { showCalSubscibeDialog = true }}>
       Calendar Intergration
     </button>
+
+    <h1 class="text-center text-xl mt-5">Past events</h1>
+
+    {#each pastEvents as event (event.id)}
+      <div class="flex flex-col" animate:flip={listAnimation}>
+        <EventBox {event} on:open={() => select(event)}/>
+      </div>
+    {/each}
   {:else}
     <div class="flex flex-col" in:scale={{ start: 0.8, duration: 200 }}>
       {#if selectedEvent}
         <EventDetails event={selectedEvent} on:close={() => select(null)}
           onRemove={() => tryDeleteEvent(/** @type {NonNullable<typeof selectedEvent>} */(selectedEvent).id)}/>
+      {:else if $isLoading}
+        <span class="text-center my-10">Loading...</span>
       {:else}
         <span class="text-center my-10">This event does not exist.</span>
       {/if}

@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store'
+import { isLoading } from './isLoadingStore.js'
 import { listenGames } from './firedb.js'
 import { getSavedState, saveState } from './helpers.js'
 
@@ -24,6 +25,7 @@ const { set, subscribe } = writable(gl)
 
 /** @param {(err: Error) => void} errCallback */
 export function load (errCallback) {
+  isLoading.set(true)
   return listenGames(gameMap => {
     if (!gameMap) {
       set([])
@@ -40,6 +42,7 @@ export function load (errCallback) {
       b.gid.localeCompare(a.gid)
     )
     set(list)
+    isLoading.set(false)
     saveState(storageKey, list)
   }, errCallback)
 }

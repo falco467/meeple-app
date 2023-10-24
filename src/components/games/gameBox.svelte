@@ -53,7 +53,7 @@
       {#each Object.keys({ ...game.owners, ...game.votes }) as uid (uid)}
       <li class="flex gap-1 items-center rounded-full p-1 px-2"
         class:bg-sky-800={game.votes[uid]} class:bg-neutral-700={!game.votes[uid]}>
-        <span class="mb-[0.1em]">{$userList?.[uid]?.name || '***'}</span>
+        <span class="mb-[0.1rem]">{$userList?.[uid]?.name || '***'}</span>
         {#if game.owners?.[uid]}
           <Icon i="cube" title="owner" class="!h-3 !w-3"/>
         {/if}

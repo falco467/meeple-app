@@ -24,12 +24,12 @@ export function getErrorMessage (err) {
 
 /** @param {Date} d */
 export function toISODay (d) {
-  return d.toISOString().substring(0, 10)
+  return d.toLocaleDateString('sv')
 }
 
 /** @param {Date} d @param {string} field @param {string} variation */
 export function getDate (d, field, variation = 'short') {
-  return d.toLocaleString('default', { [field]: variation })
+  return d.toLocaleString('en', { [field]: variation })
 }
 
 /** @param {import('./firedb.js').Event['days']} days */
@@ -73,8 +73,8 @@ export function getGameHash (game) {
   return `#${game.gid}:${name}`
 }
 
-/** @param {import('./firedb.js').Event} event @param {import('./firedb.js').UserMap} userList */
-export async function shareEvent (event, userList) {
+/** @param {import('./firedb.js').Event} event */
+export async function shareEvent (event) {
   const baseURL = window.location.href.split('#')[0]
   const url = `${baseURL}${getEventHash(event)}`
   const shareData = {
@@ -142,5 +142,18 @@ export function customListener (node, p) {
 
 /** @type {import('svelte/animate').FlipParams} */
 export const listAnimation = {
-  duration: (dist) => Math.sqrt(dist) * 50
+  duration: (_) => 300
+}
+
+/** @param {import('./firedb.js').Game} game @param {number} count */
+export function fitsPlayerCount (game, count) {
+  const rplayers = game.recPlayers
+    .replaceAll(/(\d+)-(\d+)/g, (s, g1, g2) => {
+      const [start, end] = [parseInt(g1), parseInt(g2)]
+      let r = g1
+      for (let i = start + 1; i <= end; i++) r += `,${i}`
+      return r
+    }).split(',')
+
+  return rplayers.includes(`${count}`)
 }
