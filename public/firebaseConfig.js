@@ -1,3 +1,5 @@
-export const firebaseConfig = // Add configuration of your firebase project
+export const firebaseConfig = {
+  // TODO: Add configuration of your firebase project
+}
 
-export const vapidKey = // add your firebase messaging vapidKey here
+export const vapidKey = '' // TODO: add your firebase messaging vapidKey here
