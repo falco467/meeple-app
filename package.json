@@ -1,7 +1,7 @@
 {
   "name": "meeple-app",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "dev": "astro dev",
@@ -9,14 +9,15 @@
     "build": "astro build"
   },
   "dependencies": {
-    "@astrojs/svelte": "^4.0.3",
-    "@astrojs/tailwind": "^5.0.2",
-    "astro": "^3.3.3",
-    "firebase": "^10.5.0",
-    "svelte": "^4.2.2",
-    "tailwindcss": "^3.3.3"
+    "@astrojs/svelte": "^5.7.0",
+    "@astrojs/tailwind": "^5.1.0",
+    "astro": "^4.12.3",
+    "firebase": "^10.12.4",
+    "svelte": "^4.2.18",
+    "tailwindcss": "^3.4.7"
   },
   "devDependencies": {
-    "eslint-config-astro-svelte-jsdoc-standard": "^1.0.4"
+    "eslint-config-astro-svelte-jsdoc-standard": "^1.0.15",
+    "svelte-check": "^3.8.5"
   }
 }

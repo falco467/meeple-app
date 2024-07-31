@@ -239,6 +239,8 @@
   </div>
   {/if}
 
+  {#if errText}<span class="text-red-500">{errText}</span>{/if}
+
   <Dialog bind:visible={addTimesVisible} confirmText="Add Times" onConfirm={tryAddTimes}>
     <div class="flex flex-col gap-5 max-h-96 overflow-y-scroll">
       <CalendarBox bind:toAddList {event} readOnly/>

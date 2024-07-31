@@ -3,9 +3,9 @@
 
 import { firebaseConfig } from './firebaseConfig.js'
 // @ts-expect-error ts does not recognize static import
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js'
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js'
 // @ts-expect-error ts does not recognize static import
-import { getMessaging } from 'https://www.gstatic.com/firebasejs/9.16.0/firebase-messaging-sw.js'
+import { getMessaging } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-messaging-sw.js'
 
 const self = /** @type {ServiceWorkerGlobalScope} */(/** @type {unknown} */(globalThis.self))
 

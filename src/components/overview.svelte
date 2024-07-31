@@ -29,7 +29,9 @@
   let unsubUsers = loadUsers()
   onDestroy(() => unsubUsers())
 
-  void tryLogin()
+  if (!import.meta.env.SSR) {
+    void tryLogin()
+  }
 </script>
 
 <div class="flex flex-col gap-3 self-center w-full max-w-lg">

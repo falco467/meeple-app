@@ -14,15 +14,15 @@
   },
   "main": "index.mjs",
   "dependencies": {
-    "firebase-admin": "^11.11.0",
-    "firebase-functions": "^4.4.1",
-    "ics": "^3.5.0",
+    "firebase-admin": "^12.3.0",
+    "firebase-functions": "^5.0.1",
+    "ics": "^3.7.6",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
-    "eslint": "^8.52.0",
-    "firebase-functions-test": "^3.1.0",
-    "eslint-config-standard": "^17.1.0"
+    "eslint": "^8.57.0",
+    "eslint-config-standard": "^17.1.0",
+    "firebase-functions-test": "^3.3.0"
   },
   "private": true
 }

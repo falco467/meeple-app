@@ -22,8 +22,6 @@ const uidStorageKey = 'meeple:uid'
 export let uid = getSavedState(uidStorageKey) ?? ''
 
 export async function checkLogin () {
-  if (import.meta.env.SSR) return
-
   /** @type {import('firebase/auth').User?} */
   const user = await new Promise(resolve => {
     const unsub = onAuthStateChanged(auth, user => {

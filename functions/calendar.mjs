@@ -1,8 +1,8 @@
 import { randomUUID } from 'crypto'
-import { onValueWritten } from 'firebase-functions/v2/database'
 import { createEvents } from 'ics'
 import { defaultDBOptions } from './helpers.mjs'
-import { initializeApp } from 'firebase-admin/app'
+import { getStorage } from 'firebase-admin/storage'
+import { onValueWritten } from 'firebase-functions/v2/database'
 
 /**
  * @typedef Event
@@ -19,8 +19,6 @@ import { initializeApp } from 'firebase-admin/app'
 /** @typedef {{isFavorite: boolean, isHome: boolean}} EventVote */
 
 // If an Event is created everybody is notified
-
-let app = null
 
 const eventFileName = 'calendar/events.ics'
 
@@ -65,9 +63,7 @@ export const updateicsonchange = onValueWritten({
 
   icsData = icsData.replace(/(?<=X-PUBLISHED-TTL:).+/, 'PT5M')
 
-  if (!app) app = initializeApp()
-
-  const bucket = app.getStorage().bucket()
+  const bucket = getStorage().bucket()
   const eventFile = bucket.file(eventFileName)
 
   const token = await getDownloadToken(eventFile)
@@ -89,7 +85,7 @@ function toDateArray (dateString, daysToAdd = 0) {
   return [d.getFullYear(), d.getMonth() + 1, d.getDate()]
 }
 
-/** @param {import('@google-cloud/storage/build/src/file').File} eventFile */
+/** @param {ReturnType<ReturnType<ReturnType<typeof getStorage>['bucket']>['file']>} eventFile */
 async function getDownloadToken (eventFile) {
   const [fileExists] = await eventFile.exists()
   if (!fileExists) {
@@ -97,5 +93,5 @@ async function getDownloadToken (eventFile) {
   }
 
   const [md] = await eventFile.getMetadata()
-  return md.metadata.firebaseStorageDownloadTokens
+  return md.metadata?.firebaseStorageDownloadTokens
 }

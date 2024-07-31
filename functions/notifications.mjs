@@ -1,4 +1,4 @@
-import admin from 'firebase-admin'
+import { getMessaging } from 'firebase-admin/messaging'
 import { onValueCreated, onValueDeleted, onValueWritten } from 'firebase-functions/v2/database'
 import { defaultDBOptions, getEventCreator, getEventName, getUserName } from './helpers.mjs'
 
@@ -132,15 +132,11 @@ async function getMessageTokens (dbRoot, { includeIDs, excludeIDs }) {
     .flatMap(([uid, v]) => Object.keys(v.tokens || {}))
 }
 
-let app = null
-
 /** @param {{tokens: string[], title: string, body: string, link: string}} param0 */
 async function sendMessage ({ tokens, title, body, link }) {
-  if (!app) app = admin.initializeApp()
-
   if (!tokens.length) return
 
-  await admin.messaging(app).sendMulticast({
+  await getMessaging().sendEachForMulticast({
     tokens,
     notification: {
       title,
