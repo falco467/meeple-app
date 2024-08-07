@@ -23,7 +23,6 @@
   }
 
   /** @param {typeof event} _eventForReactivity */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function getSortedVoters (_eventForReactivity) {
     const voters = Object.keys(event.lastVoted)
     voters.sort((a, b) => {
@@ -36,7 +35,6 @@
   }
 
   /** @param {typeof event} _eventForReactivity */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function getBestDays (_eventForReactivity) {
     const days = Object.entries(event.days).map(([date, day]) => {
       const d = new Date(date)
@@ -57,7 +55,6 @@
   }
 
   /** @param {typeof event} _eventForReactivity */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function getSelectedDayAndTime (_eventForReactivity) {
     if (event.selectedDay == null || event.selectedTime == null) return null
 
@@ -83,7 +80,6 @@
   }
 
   /** @param {typeof event} _eventForReactivity */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function getEventColor (_eventForReactivity) {
     const today = new Date()
     today.setTime(today.getTime() - today.getTime() % (24 * 60 * 60 * 1000))

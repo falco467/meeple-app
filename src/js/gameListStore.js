@@ -19,7 +19,7 @@ const placeholderList = Array.from(new Array(10), (_, i) => ({
 }))
 
 /** @type {Game[]} */
-const gl = getSavedState(storageKey) || placeholderList
+const gl = getSavedState(storageKey) ?? placeholderList
 
 const { set, subscribe } = writable(gl)
 
@@ -49,7 +49,7 @@ export function load (errCallback) {
 
 /** @param {Game} game */
 function countVotes (game) {
-  return Object.keys(game.votes).length
+  return Object.keys(game.votes ?? {}).length
 }
 
 export const gameList = {

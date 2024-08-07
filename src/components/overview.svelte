@@ -27,7 +27,7 @@
   }
 
   let unsubUsers = loadUsers()
-  onDestroy(() => unsubUsers())
+  onDestroy(unsubUsers)
 
   if (!import.meta.env.SSR) {
     void tryLogin()

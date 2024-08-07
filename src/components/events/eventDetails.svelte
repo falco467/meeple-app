@@ -10,7 +10,7 @@
   /** @type {import('../../js/firedb.js').Event} */
   export let event
   export let editing = false
-  export let onRemove = async () => {}
+  export let onRemove = async () => {/** default empty */}
 
   let errText = ''
   let deleteModalVisible = false

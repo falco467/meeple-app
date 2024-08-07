@@ -7,13 +7,14 @@ import { getSavedState, saveState } from './helpers.js'
 const storageKey = 'meeple:userList'
 
 /** @type {UserMap} */
-const users = getSavedState(storageKey) || {}
+const users = getSavedState(storageKey) ?? {}
 
 const { set, subscribe } = writable(users)
 
 /** @param {(err: Error) => void} errCallback */
 export function load (errCallback) {
-  return listenUsers((/** @type {UserMap} */ u) => {
+  return listenUsers(u => {
+    u ??= {}
     Object.keys(u).forEach(k => u[k].verified || delete u[k])
     set(u)
     saveState(storageKey, u)

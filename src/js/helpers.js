@@ -1,25 +1,25 @@
 // Service Worker for fetch and web push
 export const swRegistrationPromise = /** @type {Promise<ServiceWorkerRegistration>} */(
-  import.meta.env.SSR || window.navigator?.serviceWorker?.register('/serviceWorker.js', { type: 'module' })
+  import.meta.env.SSR || window.navigator.serviceWorker.register('/serviceWorker.js', { type: 'module' })
 )
 
-/** @param {*} err */
+/** @param {{code?:string, message?:string}} err */
 export function getErrorMessage (err) {
-  if (err?.code === 'PERMISSION_DENIED') {
+  if (err.code === 'PERMISSION_DENIED') {
     return "You don't have permission for this."
   }
-  if (err?.code === 'auth/user-not-found') {
+  if (err.code === 'auth/user-not-found') {
     return 'E-Mail address not found'
   }
-  if (err?.code === 'auth/wrong-password') {
+  if (err.code === 'auth/wrong-password') {
     return 'Wrong password'
   }
-  if (err?.code === 'auth/email-already-in-use') {
+  if (err.code === 'auth/email-already-in-use') {
     return 'E-Mail is already registered'
   }
 
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  return err?.message ?? `${err}`
+   
+  return err.message ?? String(err)
 }
 
 /** @param {Date} d */
@@ -34,7 +34,7 @@ export function getDate (d, field, variation = 'short') {
 
 /** @param {import('./firedb.js').Event['days']} days */
 export function getDayList (days) {
-  const dl = Object.entries(days).map(([date, times]) => {
+  const dl = Object.entries(days??{}).map(([date, times]) => {
     const d = new Date(date)
     return {
       date,
@@ -59,7 +59,7 @@ export function hasAny (o) {
 }
 
 /** @param {() => (void|Promise<void>)} f */
-export const onEnter = (f) => (/** @type {KeyboardEvent} */ e) => { e.key === 'Enter' && void f() }
+export const onEnter = (f) => (/** @type {KeyboardEvent} */ e) => { if (e.key === 'Enter') void f() }
 
 /** @param {import('./firedb.js').Event} event */
 export function getEventHash (event) {
@@ -89,12 +89,14 @@ export async function shareEvent (event) {
   }
 }
 
-/** @param {string} key */
+/** @template T @param {string} key @returns {T?} */
 export function getSavedState (key) {
   if (import.meta.env.SSR) return null
   try {
     const it = window.localStorage.getItem(key)
-    return it != null && JSON.parse(it)
+    if (it == null) return null
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return JSON.parse(it)
   } catch (err) {
     console.error(err)
     return null
@@ -115,7 +117,7 @@ export function getIDFromHash () {
 
 export function pushHashOnLoad () {
   const h = window.location.hash
-  window.history.replaceState(null, '', `${window.location.pathname}`)
+  window.history.replaceState(null, '', window.location.pathname)
   window.history.pushState(null, '', `${window.location.pathname}${h}`)
 }
 
@@ -148,7 +150,7 @@ export const listAnimation = {
 /** @param {import('./firedb.js').Game} game @param {number} count */
 export function fitsPlayerCount (game, count) {
   const rplayers = game.recPlayers
-    .replaceAll(/(\d+)-(\d+)/g, (s, g1, g2) => {
+    .replaceAll(/(\d+)-(\d+)/g, /** @param {string} g1 @param {string} g2 */(s, g1, g2) => {
       const [start, end] = [parseInt(g1), parseInt(g2)]
       let r = g1
       for (let i = start + 1; i <= end; i++) r += `,${i}`

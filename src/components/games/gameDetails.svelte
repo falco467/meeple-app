@@ -57,11 +57,11 @@
 <article class="flex flex-col gap-2">
   {#if errText}<span class="text-red-500">{errText}</span>{/if}
 
-  <GameBox {game} on:open={() => openBGG()}/>
+  <GameBox {game} on:open={openBGG}/>
 
   <div class="flex gap-2 justify-between">
     <button class="flex items-center gap-1 rounded border p-1 px-2"
-      on:click={() => openOwnerModal()}>
+      on:click={openOwnerModal}>
       <Icon i="cube"/> Set Owners
     </button>
     <button class="flex items-center gap-1 rounded border p-1 px-2"

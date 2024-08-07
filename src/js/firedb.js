@@ -4,21 +4,32 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, on
 import { get, getDatabase, onValue, push, ref, remove, set, update } from 'firebase/database'
 import { getSavedState, saveState } from './helpers.js'
 
-export const app = /** @type {ReturnType<initializeApp>} */
-  (import.meta.env.SSR || initializeApp(/** @type {any} */(window).firebaseConfig))
+ 
+/** @type {ReturnType<initializeApp>} */
+ 
+export let app
+/** @type {ReturnType<getAuth>} */
+let auth
+/** @type {ReturnType<getDatabase>} */
+let db
 
-import.meta.env.SSR || initializeAppCheck(app, {
+if (!import.meta.env.SSR){
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  app = initializeApp(/** @type {any} */(window).firebaseConfig)
+  auth = getAuth(app)
+  db = getDatabase(app)
+  initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider('6Ld5yeIjAAAAAAWy-JqWV4ObHjP5AUAdWsGToDWB'),
   isTokenAutoRefreshEnabled: true
 })
+}
 
-const auth = /** @type {ReturnType<getAuth>} */ (import.meta.env.SSR || getAuth(app))
-const db = /** @type {ReturnType<getDatabase>} */ (import.meta.env.SSR || getDatabase(app))
 
 // #region Auth
 
 const uidStorageKey = 'meeple:uid'
 
+/** @type {string} */
 export let uid = getSavedState(uidStorageKey) ?? ''
 
 export async function checkLogin () {
@@ -58,10 +69,12 @@ export async function createAccount (email, password, name) {
  * @prop {boolean} verified
  */
 
-/** @param {(v:UserMap) => void} listener @param {(err: Error) => void} errCallback */
+/** @param {(v:UserMap?) => void} listener @param {(err: Error) => void} errCallback */
 export function listenUsers (listener, errCallback) {
   if (import.meta.env.SSR) return () => { /* do nothing */ }
-  return onValue(ref(db, 'users'), snap => { listener(snap.val()) }, errCallback)
+  return onValue(ref(db, 'users'), snap => { 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    listener(snap.val()) }, errCallback)
 }
 
 /** @param {string} uid @param {string} name */
@@ -90,8 +103,8 @@ export async function saveMessagingToken (token) {
  * @prop {string} players
  * @prop {string} recPlayers
  * @prop {string} rating
- * @prop {{[uid:string]:Vote}} votes
- * @prop {{[uid:string]:OwnerInfo}} owners
+ * @prop {{[uid:string]:Vote}?} votes
+ * @prop {{[uid:string]:OwnerInfo}?} owners
  */
 
 /**
@@ -104,10 +117,12 @@ export async function saveMessagingToken (token) {
  * @prop {number} created
  */
 
-/** @param {(v:GameMap) => void} listener @param {(err: Error) => void} errCallback */
+/** @param {(v:GameMap?) => void} listener @param {(err: Error) => void} errCallback */
 export function listenGames (listener, errCallback) {
   if (import.meta.env.SSR) return () => { /* do nothing */ }
-  return onValue(ref(db, 'games'), snap => { listener(snap.val()) }, errCallback)
+  return onValue(ref(db, 'games'), snap => { 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    listener(snap.val()) }, errCallback)
 }
 
 /** @param {Partial<Game>} game */
@@ -149,17 +164,19 @@ export async function updateOwners (gid, owners) {
  * @prop {number} created
  * @prop {string} [selectedDay]
  * @prop {string} [selectedTime]
- * @prop {{[date:string]:EventDay}} days
+ * @prop {{[date:string]:EventDay}?} days
  * @prop {{[uid:string]:number}} lastVoted
  */
 
-/** @typedef {{[time:string]:{created:number, votes:{[uid:string]:EventVote}}}} EventDay */
+/** @typedef {{[time:string]:{created:number, votes:{[uid:string]:EventVote}?}}} EventDay */
 
 /** @typedef {{isFavorite: boolean, isHome: boolean}} EventVote */
 
-/** @param {(v:EventMap) => void} listener @param {(err: Error) => void} errCallback */
+/** @param {(v:EventMap?) => void} listener @param {(err: Error) => void} errCallback */
 export function listenEvents (listener, errCallback) {
-  return onValue(ref(db, 'events'), snap => { listener(snap.val()) }, errCallback)
+  return onValue(ref(db, 'events'), snap => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    listener(snap.val()) }, errCallback)
 }
 
 /** @param {Event} event */
@@ -214,7 +231,9 @@ export async function addEventTimes (id, dayTimes, uid) {
 
 /** @returns {Promise<string?>} */
 export async function getICalURL () {
-  return (await get(ref(db, 'calendar/icsDownloadURL'))).val()
+  const snap = await get(ref(db, 'calendar/icsDownloadURL'))
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return snap.val()
 }
 
 // #endregion

@@ -52,7 +52,7 @@
     (filters.searchTerm === '' || g.name.toLowerCase().includes(filters.searchTerm.toLowerCase())) &&
     (filters.owners.length === 0 || Object.keys(g.owners).find(k => filters.owners.includes(k))) &&
     (filters.voters.length === 0 || filters.voters.every(k => Object.keys(g.votes).includes(k))) &&
-    (filters.unvoted === false || !Object.keys(g.votes).includes(uid)) &&
+    (!filters.unvoted || !Object.keys(g.votes).includes(uid)) &&
     (filters.playerCount == null || fitsPlayerCount(g, filters.playerCount))
   )
 
@@ -106,7 +106,7 @@
       </div>
 
       <button class="flex gap-1 bg-slate-500 rounded p-2 cursor-pointer"
-        class:!bg-sky-800={filters.owners.length > 0} on:click={() => showSelection('owners')} >
+        class:!bg-sky-800={filters.owners.length > 0} on:click={() => { showSelection('owners') }} >
         <Icon i="cube"/>
         {#if filters.owners.length === 0}
           <span class="text-slate-400 hidden md:inline">owners</span>
@@ -121,7 +121,7 @@
       </button>
 
       <button class="flex gap-1 bg-slate-500 rounded p-2 cursor-pointer"
-        class:!bg-sky-800={filters.voters.length > 0} on:click={() => showSelection('voters')}>
+        class:!bg-sky-800={filters.voters.length > 0} on:click={() => { showSelection('voters') }}>
         <Icon i="thumbs-up"/>
         {#if filters.voters.length === 0}
           <span class="text-slate-400 hidden md:inline">voters</span>
@@ -136,7 +136,7 @@
       </button>
 
       <button class="flex gap-1 bg-slate-500 rounded p-2 cursor-pointer"
-        class:!bg-sky-800={filters.playerCount != null} on:click={() => showSelection('playerCount')}>
+        class:!bg-sky-800={filters.playerCount != null} on:click={() => { showSelection('playerCount') }}>
         <Icon i="user"/>
         {#if filters.playerCount == null}
           <span class="text-slate-400 hidden md:inline">players</span>
@@ -162,20 +162,20 @@
 
     {#each filterList as game (game.gid)}
       <div class="flex flex-col" animate:flip={listAnimation}>
-        <GameBox {game} on:open={() => select(game)}/>
+        <GameBox {game} on:open={() => { select(game) }}/>
       </div>
     {/each}
   {:else}
     {#if selectedGame}
       <div class="flex flex-col transition-transform duration-500"
         in:scale={{ start: 0.8, duration: 200 }} class:scale-50={closing}>
-        <GameDetails game={selectedGame} on:close={() => select(null)}/>
+        <GameDetails game={selectedGame} on:close={() => { select(null) }}/>
       </div>
     {:else}
       <span class="text-center my-10">This game does not exist.</span>
 
       <button class="flex items-center self-end gap-1 rounded border p-1 px-2 mt-2"
-        on:click={() => select(null)}>
+        on:click={() => { select(null) }}>
         <Icon i="arrow-left"/> Back to List
       </button>
     {/if}
@@ -205,7 +205,7 @@
     {:else}
       {#each users as user}
       <button class="flex items-center gap-1 rounded border p-1 pr-2"
-        on:click={() => toggleFilter(dialogType, user.uid)}>
+        on:click={() => { toggleFilter(dialogType, user.uid) }}>
         <span class="border" class:text-transparent={!filters[dialogType].includes(user.uid)}>
           <Icon i="check" class="!w-4 !h-4"/>
         </span>

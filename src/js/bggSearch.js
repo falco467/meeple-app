@@ -23,8 +23,8 @@ export async function bggSearchGame (name) {
   let list = Array.from(searchXML.querySelectorAll('item')).map(node => ({
     id: node.id,
     type: node.getAttribute('type'),
-    name: node.querySelector('name')?.getAttribute('value') || '',
-    year: node.querySelector('yearpublished')?.getAttribute('value') || ''
+    name: node.querySelector('name')?.getAttribute('value') ?? '',
+    year: node.querySelector('yearpublished')?.getAttribute('value') ?? ''
   }))
 
   list = list.filter(b => !(b.type === 'boardgameexpansion' || list.find(x => b.id === x.id && x.type === 'boardgameexpansion')))
@@ -53,7 +53,7 @@ export async function bggLoadGame (id) {
   return {
     gid: id,
     name: getValue(it, 'name'),
-    pic: it?.querySelector('thumbnail')?.textContent || '',
+    pic: it?.querySelector('thumbnail')?.textContent ?? '',
     players: `${getValue(it, 'minplayers')}-${getValue(it, 'maxplayers')}`,
     rating: parseFloat(getValue(it, 'average')).toFixed(1),
     recPlayers: calculateRecommendedPlayers(it),
@@ -64,9 +64,9 @@ export async function bggLoadGame (id) {
 /** @param {Element?} it */
 function calculateRecommendedPlayers (it) {
   const npRatings = Array.from(
-    it?.querySelectorAll('poll[name="suggested_numplayers"] results') || [])
+    it?.querySelectorAll('poll[name="suggested_numplayers"] results') ?? [])
     .map(n => ({
-      num: n.getAttribute('numplayers') || '',
+      num: n.getAttribute('numplayers') ?? '',
       best: getVoteCount(n, 'Best'),
       rec: getVoteCount(n, 'Recommended'),
       not: getVoteCount(n, 'Not Recommended')
@@ -105,7 +105,7 @@ function getVoteCount (node, name) {
 
 /** @param {Element?} it @param {string} tag */
 function getValue (it, tag) {
-  return it?.querySelector(tag)?.getAttribute('value') || ''
+  return it?.querySelector(tag)?.getAttribute('value') ?? ''
 }
 
 /** @param {{id: string, name: string, year: string}} r */

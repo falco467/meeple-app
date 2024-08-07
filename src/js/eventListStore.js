@@ -7,8 +7,8 @@ import { getSavedState, saveState, toISODay } from './helpers.js'
 
 const storageKey = 'meeple:eventList'
 
-/** @type {Event[]} */
-const gl = getSavedState(storageKey) || []
+/** @type {Event[]} */ 
+const gl = getSavedState(storageKey) ?? []
 
 const { set, subscribe } = writable(gl)
 
@@ -16,7 +16,7 @@ const { set, subscribe } = writable(gl)
 export function load (errCallback) {
   isLoading.set(true)
   return listenEvents(eventMap => {
-    if (!eventMap) {
+    if (eventMap == null) {
       set([])
       return
     }
@@ -24,7 +24,7 @@ export function load (errCallback) {
     list.forEach(e => {
       e.days ??= {}
       Object.values(e.days).forEach(d =>
-        Object.values(d).forEach(t => { t.votes ??= {} }))
+        { Object.values(d).forEach(t => { t.votes ??= {} }); })
     })
     list.sort((a, b) => (
       bToN(isEventOver(a)) - bToN(isEventOver(b))) ||
@@ -38,12 +38,12 @@ export function load (errCallback) {
 
 /** @param {Event} event */
 function getDay (event) {
-  return event.selectedDay || Object.keys(event.days).sort()[0]
+  return event.selectedDay ?? Object.keys(event.days??{}).sort()[0]
 }
 
 /** @param {Event} event */
 function getLastDay (event) {
-  return event.selectedDay || Object.keys(event.days).sort().at(-1) || ''
+  return event.selectedDay ?? Object.keys(event.days??{}).sort().at(-1) ?? ''
 }
 
 /** @param {boolean} b */

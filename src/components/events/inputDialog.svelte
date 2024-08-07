@@ -9,7 +9,7 @@
   export let confirmText = 'Set value'
   export let minlength = 1
   export let maxlength = 100
-  export let onConfirm = async () => {}
+  export let onConfirm = async () => { /** default empty */ }
 
   /** @type {() => Promise<void>} */
   let tryConfirm

@@ -99,7 +99,7 @@
     <GameBox {game} preview/>
 
     <button class="flex items-center gap-2 rounded border p-1 pr-2 bg-slate-800"
-      on:click={() => toggleOwner()}>
+      on:click={toggleOwner}>
       <span class:text-opacity-0={game.owners[uid] == null}>
         <Icon i="check" class="!w-4 !h-4 border"/>
       </span>
@@ -124,7 +124,7 @@
       class:invisible={game == null} on:click={tryAddGame}>
       {#if loading}<Icon i="cube" class="animate-spin" />{:else}Add Game{/if}
     </button>
-    <button class="flex-grow bg-slate-800 rounded px-5 py-3" on:click={e => customDispatch(e, 'close')}>
+    <button class="flex-grow bg-slate-800 rounded px-5 py-3" on:click={e => {customDispatch(e, 'close')}}>
       Close
     </button>
   </div>
