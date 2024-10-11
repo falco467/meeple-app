@@ -8,7 +8,7 @@
   export let isLoading = false
 
   /** @type {(() => Promise<void>)|(() => void)} */
-  export let onConfirm = async () => {/** default empty */}
+  export let onConfirm = async () => { /** default empty */ }
 
   let errText = ''
 
@@ -18,9 +18,11 @@
     try {
       await onConfirm()
       visible = false
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
-    } finally {
+    }
+    finally {
       isLoading = false
     }
   }

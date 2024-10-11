@@ -1,8 +1,9 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { addVote, removeVote, uid } from '../../js/firedb.js'
+  import { addStar, addVote, removeStar, removeVote, uid } from '../../js/firedb.js'
   import { getErrorMessage } from '../../js/helpers.js'
   import { userList } from '../../js/userStore.js'
+  import { myStarCount } from '../../js/gameListStore.js'
   import Icon from '../icon.svelte'
 
   /** @typedef {import('../../js/firedb.js').Game} Game */
@@ -21,20 +22,52 @@
   }
 
   /** @param {Game} game */
+  function isStarred (game) {
+    return Object.keys(game.stars).includes(uid)
+  }
+
+  /** @param {Game} game */
   async function tryToggleVote (game) {
     try {
       if (hasMyVote(game)) {
+        if (isStarred(game)) {
+          await removeStar(game.gid, uid)
+        }
         await removeVote(game.gid, uid)
-      } else {
+      }
+      else {
         await addVote(game.gid, uid)
       }
-    } catch (err) {
+    }
+    catch (err) {
+      errText = getErrorMessage(err)
+    }
+  }
+
+  /** @param {Game} game */
+  async function tryToggleStar (game) {
+    try {
+      if (isStarred(game)) {
+        await removeStar(game.gid, uid)
+      }
+      else {
+        if ($myStarCount >= 3) {
+          throw new Error('You can only star 3 games')
+        }
+        if (!hasMyVote(game)) {
+          await addVote(game.gid, uid)
+        }
+        await addStar(game.gid, uid)
+      }
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
   }
 </script>
 
-<article class="flex gap-2 bg-slate-800 rounded p-2">
+<article class="flex gap-2 bg-slate-800 rounded p-2 outline-amber-900"
+  class:outline={Object.keys(game.stars).length > 0}>
   <button class="flex w-20 rounded overflow-hidden flex-shrink-0 self-start"
     on:click|stopPropagation={() => dispatch('open')}>
     {#if game.pic}
@@ -49,16 +82,27 @@
 
     {#if errText}<span class="text-red-500">{errText}</span>{/if}
 
-    <ul class="flex gap-2 flex-wrap text-xs">
+    <ul class="flex gap-2 flex-wrap text-xs items-start">
       {#each Object.keys({ ...game.owners, ...game.votes }) as uid (uid)}
       <li class="flex gap-1 items-center rounded-full p-1 px-2"
-        class:bg-sky-800={game.votes[uid]} class:bg-neutral-700={!game.votes[uid]}>
+        class:bg-sky-800={game.votes[uid] && !game.stars[uid]}
+        class:bg-amber-900={game.stars[uid]}
+        class:bg-neutral-700={!game.votes[uid]}>
         <span class="mb-[0.1rem]">{$userList?.[uid]?.name || '***'}</span>
         {#if game.owners?.[uid]}
           <Icon i="cube" title="owner" class="!h-3 !w-3"/>
         {/if}
       </li>
       {/each}
+      {#if !preview}
+      <div class="flex grow">
+        <span class="grow"></span>
+        <button on:click={async () => { await tryToggleStar(game) }}>
+          <Icon i="star" class="!w-8 !h-8 justify-self-end" stroke={1.5}
+            fill={isStarred(game) ? 'rgb(100, 116, 139)' : 'none'}/>
+        </button>
+      </div>
+      {/if}
     </ul>
   </section>
 
@@ -73,7 +117,7 @@
     </di>
     <div class="flex-grow"></div>
     {#if !preview}
-      <button on:click={() => tryToggleVote(game)}>
+      <button on:click={async () => { await tryToggleVote(game) }}>
         <Icon i="thumbs-up" class="!w-8 !h-8" stroke={1.5}
           fill={hasMyVote(game) ? 'rgb(100, 116, 139)' : 'none'}/>
       </button>

@@ -28,7 +28,8 @@
         throw new Error('Please enter at least 3 characters')
       }
       searchResults = await bggSearchGame(searchText)
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
     loading = false
@@ -41,7 +42,8 @@
     game = null
     try {
       game = await bggLoadGame(id)
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
     loading = false
@@ -57,7 +59,8 @@
       gameAdded = true
       game = null
       searchResults = null
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
     loading = false
@@ -68,7 +71,8 @@
 
     if (game.owners[uid] == null) {
       game.owners[uid] = { created: Date.now() }
-    } else {
+    }
+    else {
       delete game.owners[uid]
       game = game
     }
@@ -110,7 +114,7 @@
     <main class="flex flex-col gap-2 items-stretch">
       {#each searchResults as r}
       <button class="bg-slate-800 rounded p-2"
-        on:click={() => tryLoadGame(r.id)}>
+        on:click={async () => { await tryLoadGame(r.id) }}>
         {r.name} ({r.year})
       </button>
       {:else}
@@ -124,7 +128,7 @@
       class:invisible={game == null} on:click={tryAddGame}>
       {#if loading}<Icon i="cube" class="animate-spin" />{:else}Add Game{/if}
     </button>
-    <button class="flex-grow bg-slate-800 rounded px-5 py-3" on:click={e => {customDispatch(e, 'close')}}>
+    <button class="flex-grow bg-slate-800 rounded px-5 py-3" on:click={e => { customDispatch(e, 'close') }}>
       Close
     </button>
   </div>

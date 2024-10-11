@@ -3,10 +3,15 @@ export const swRegistrationPromise = /** @type {Promise<ServiceWorkerRegistratio
   import.meta.env.SSR || window.navigator.serviceWorker.register('/serviceWorker.js', { type: 'module' })
 )
 
-/** @param {{code?:string, message?:string}} err */
-export function getErrorMessage (err) {
+/** @param {any} anyErr */
+export function getErrorMessage (anyErr) {
+  if (anyErr == null) {
+    return 'Unexpected null error'
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const err = /** @type {{code?:string, message?:any}} */ (anyErr)
   if (err.code === 'PERMISSION_DENIED') {
-    return "You don't have permission for this."
+    return 'You don\'t have permission for this.'
   }
   if (err.code === 'auth/user-not-found') {
     return 'E-Mail address not found'
@@ -18,8 +23,7 @@ export function getErrorMessage (err) {
     return 'E-Mail is already registered'
   }
 
-   
-  return err.message ?? String(err)
+  return String(err.message ?? err)
 }
 
 /** @param {Date} d */
@@ -34,14 +38,14 @@ export function getDate (d, field, variation = 'short') {
 
 /** @param {import('./firedb.js').Event['days']} days */
 export function getDayList (days) {
-  const dl = Object.entries(days??{}).map(([date, times]) => {
+  const dl = Object.entries(days).map(([date, times]) => {
     const d = new Date(date)
     return {
       date,
       times,
       month: getDate(d, 'month'),
       weekday: getDate(d, 'weekday').toUpperCase(),
-      dom: getDate(d, 'day', 'numeric')
+      dom: getDate(d, 'day', 'numeric'),
     }
   })
   dl.sort((a, b) => a.date.localeCompare(b.date))
@@ -59,7 +63,7 @@ export function hasAny (o) {
 }
 
 /** @param {() => (void|Promise<void>)} f */
-export const onEnter = (f) => (/** @type {KeyboardEvent} */ e) => { if (e.key === 'Enter') void f() }
+export const onEnter = f => (/** @type {KeyboardEvent} */ e) => { if (e.key === 'Enter') void f() }
 
 /** @param {import('./firedb.js').Event} event */
 export function getEventHash (event) {
@@ -80,11 +84,12 @@ export async function shareEvent (event) {
   const shareData = {
     title: 'Meeple Event',
     text: `Event: ${event.name}`,
-    url
+    url,
   }
   if (navigator.canShare(shareData)) {
     await navigator.share(shareData)
-  } else {
+  }
+  else {
     await navigator.clipboard.writeText(url)
   }
 }
@@ -97,7 +102,8 @@ export function getSavedState (key) {
     if (it == null) return null
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return JSON.parse(it)
-  } catch (err) {
+  }
+  catch (err) {
     console.error(err)
     return null
   }
@@ -130,7 +136,7 @@ export function pushHash (h) {
 export function customDispatch (e, name, detail = undefined) {
   e.target?.dispatchEvent(new window.CustomEvent(name, {
     bubbles: true,
-    detail
+    detail,
   }))
 }
 
@@ -138,13 +144,15 @@ export function customDispatch (e, name, detail = undefined) {
 export function customListener (node, p) {
   node.addEventListener(p.on, /** @type {EventListener} */ (p.do))
   return {
-    destroy: () => { node.removeEventListener(p.on, /** @type {EventListener} */ (p.do)) }
+    destroy: () => { node.removeEventListener(p.on, /** @type {EventListener} */ (p.do)) },
   }
 }
 
+const animationTimeMs = 300
+
 /** @type {import('svelte/animate').FlipParams} */
 export const listAnimation = {
-  duration: (_) => 300
+  duration: _ => animationTimeMs,
 }
 
 /** @param {import('./firedb.js').Game} game @param {number} count */

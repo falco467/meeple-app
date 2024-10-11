@@ -5,5 +5,7 @@ export default [
     rules: {
       '@typescript-eslint/no-dynamic-delete': 'off', 
     }
+  }, {
+    ignores: ["functions/**"]
   }
 ]

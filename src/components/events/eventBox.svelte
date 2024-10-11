@@ -45,7 +45,7 @@
         dom: getDate(d, 'day', 'numeric'),
         voteCount: getVoteCount(day),
         starCount: getVoteCount(day, v => v.isFavorite),
-        homeCount: getVoteCount(day, v => v.isHome)
+        homeCount: getVoteCount(day, v => v.isHome),
       }
     })
 
@@ -59,12 +59,12 @@
     if (event.selectedDay == null || event.selectedTime == null) return null
 
     const day = getDayList(event.days).find(d => d.date === event.selectedDay)
-    if (!day?.times[event.selectedTime]) return null
+    if (day?.times?.[event.selectedTime] == null) return null
 
     return { ...day, t: event.selectedTime, timeSlot: day.times[event.selectedTime] }
   }
 
-  /** @param {typeof event.days['']} times @param {((v:import('../../js/firedb.js').EventVote) => boolean)?} filter */
+  /** @param {import('../../js/firedb.js').EventDay} times @param {((v:import('../../js/firedb.js').EventVote) => boolean)?} filter */
   function getVoteCount (times, filter = null) {
     let count = 0
     Object.values(times).forEach(t => {
@@ -74,7 +74,7 @@
     return count
   }
 
-  /** @param {ReturnType<getBestDays>[0]} v */
+  /** @param {ReturnType<getBestDays>[number]} v */
   function getVoteScore (v) {
     return v.voteCount + v.starCount * 0.3 + (v.homeCount ? 0.5 : 0)
   }
@@ -117,7 +117,7 @@
       </section>
 
       <ul class="flex gap-2 flex-wrap text-xs">
-        {#each Object.entries(selectedDayAndTime.timeSlot.votes) as [voter, vote] (voter)}
+        {#each Object.entries(selectedDayAndTime.timeSlot.votes ?? {}) as [voter, vote] (voter)}
         <li class="flex gap-1 items-center rounded-full p-1 px-2"
           class:bg-sky-800={!vote.isFavorite} class:bg-amber-700={vote.isFavorite}>
           <span >{$userList[voter]?.name || '***'}</span>

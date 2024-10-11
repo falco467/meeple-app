@@ -23,7 +23,7 @@ export async function initMessaging () {
     void serviceWorkerRegistration.showNotification(
       payload.notification?.title ?? 'Notification', {
         body: payload.notification?.body,
-        icon: '/apple-touch-icon.png'
+        icon: '/apple-touch-icon.png',
       })
   })
 

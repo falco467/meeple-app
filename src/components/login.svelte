@@ -36,7 +36,8 @@
       checkParams()
       await login(inputEmail.value, inputPassword.value)
       dispatch('login')
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
     loading = false
@@ -48,7 +49,8 @@
       checkParams()
       await createAccount(inputEmail.value, inputPassword.value, inputName.value)
       dispatch('login')
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
     loading = false

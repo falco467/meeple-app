@@ -11,6 +11,8 @@
   import Dialog from '../dialog.svelte'
   import { userList } from '../../js/userStore.js'
 
+  const playerCounts = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+
   let errText = ''
   let gameID = getIDFromHash()
   let closing = false
@@ -39,21 +41,22 @@
 
   $: selectedGame = $gameList.find(g => g.gid === gameID)
 
-  /** @type {{searchTerm: string, owners: string[], voters: string[], unvoted: boolean, playerCount: number?}} */
   const filters = {
     searchTerm: '',
-    owners: [],
-    voters: [],
+    owners: /** @type {string[]} */ ([]),
+    voters: /** @type {string[]} */ ([]),
     unvoted: false,
-    playerCount: null
+    starred: false,
+    playerCount: /** @type {number?} */ (null),
   }
 
   $: filterList = $gameList.filter(g =>
-    (filters.searchTerm === '' || g.name.toLowerCase().includes(filters.searchTerm.toLowerCase())) &&
-    (filters.owners.length === 0 || Object.keys(g.owners).find(k => filters.owners.includes(k))) &&
-    (filters.voters.length === 0 || filters.voters.every(k => Object.keys(g.votes).includes(k))) &&
-    (!filters.unvoted || !Object.keys(g.votes).includes(uid)) &&
-    (filters.playerCount == null || fitsPlayerCount(g, filters.playerCount))
+    (filters.searchTerm === '' || g.name.toLowerCase().includes(filters.searchTerm.toLowerCase()))
+    && (filters.owners.length === 0 || Object.keys(g.owners).find(k => filters.owners.includes(k)))
+    && (filters.voters.length === 0 || filters.voters.every(k => Object.keys(g.votes).includes(k)))
+    && (!filters.unvoted || !Object.keys(g.votes).includes(uid))
+    && (!filters.starred || Object.keys(g.stars).length > 0)
+    && (filters.playerCount == null || fitsPlayerCount(g, filters.playerCount)),
   )
 
   if (!import.meta.env.SSR) {
@@ -83,7 +86,8 @@
     if (type === 'playerCount') throw Error('wrong dialog type')
     if (filters[type].includes(uid)) {
       filters[type] = filters[type].filter(e => e !== uid)
-    } else {
+    }
+    else {
       filters[type] = [...filters[type], uid]
     }
   }
@@ -158,6 +162,16 @@
           </button>
         {/if}
       </button>
+      <button class="flex gap-1 bg-slate-500 rounded p-2 cursor-pointer"
+        class:!bg-sky-800={filters.starred} on:click={() => { filters.starred = !filters.starred }}>
+        <Icon i="chart-sqare-bar"/>
+        <span class="text-slate-400">starred</span>
+        {#if filters.starred}
+          <button on:click|stopPropagation={() => { filters.starred = false }}>
+            <Icon i="x-mark"/>
+          </button>
+        {/if}
+      </button>
     </aside>
 
     {#each filterList as game (game.gid)}
@@ -193,7 +207,7 @@
   <span>Filter by {dialogType}</span>
   <div class="flex flex-col gap-1 overflow-y-auto min-w-[10rem] pr-1">
     {#if dialogType === 'playerCount'}
-      {#each [2, 3, 4, 5, 6, 7, 8, 9, 10] as num}
+      {#each playerCounts as num}
       <button class="flex items-center gap-1 rounded border p-1 pr-2"
         on:click={() => { filters.playerCount = num }}>
         <span class="border" class:text-transparent={filters.playerCount !== num}>

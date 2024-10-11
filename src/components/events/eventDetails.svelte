@@ -10,7 +10,7 @@
   /** @type {import('../../js/firedb.js').Event} */
   export let event
   export let editing = false
-  export let onRemove = async () => {/** default empty */}
+  export let onRemove = async () => { /** default empty */ }
 
   let errText = ''
   let deleteModalVisible = false
@@ -28,16 +28,19 @@
       const vote = event.days[day][time].votes[uid]
       if (!vote) {
         await setVote(day, time, {
-          isFavorite: voteType === 'favorite', isHome: voteType === 'home'
+          isFavorite: voteType === 'favorite', isHome: voteType === 'home',
         })
-      } else if (voteType === 'basic') {
+      }
+      else if (voteType === 'basic') {
         await removeVote(day, time)
-      } else {
+      }
+      else {
         if (voteType === 'favorite') vote.isFavorite = !vote.isFavorite
         if (voteType === 'home') vote.isHome = !vote.isHome
         await setVote(day, time, vote)
       }
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
   }
@@ -46,7 +49,8 @@
     errText = ''
     try {
       await setEventLastVoted(event.id, uid)
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
   }
@@ -54,19 +58,23 @@
   /** @param {string} day @param {string} time @param {import('../../js/firedb.js').EventVote} vote */
   async function setVote (day, time, vote) {
     if (editing) {
+      if (event.days[day][time].votes == null) event.days[day][time].votes = {}
       event.days[day][time].votes[uid] = vote
-    } else {
-      await setEventVote(event.id, day, time, uid, vote)
+    }
+    else {
+      await setEventVote({ id: event.id, day, time, uid, vote })
     }
   }
 
   /** @param {string} day @param {string} time */
   async function removeVote (day, time) {
     if (editing) {
+      if (event.days[day][time].votes == null) event.days[day][time].votes = {}
       delete event.days[day][time].votes[uid]
       event = event
-    } else {
-      await setEventVote(event.id, day, time, uid, null)
+    }
+    else {
+      await setEventVote({ id: event.id, day, time, uid, vote: null })
     }
   }
 
@@ -78,7 +86,8 @@
       }
       await setEventFinalDate(event.id, event.selectedDay, event.selectedTime)
       selectionInProgress = false
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
   }
@@ -186,7 +195,7 @@
           </section>
 
           <ul class="flex gap-2 flex-wrap text-xs">
-            {#each Object.entries(timeSlot.votes) as [voter, vote] (voter)}
+            {#each Object.entries(timeSlot.votes ?? {}) as [voter, vote] (voter)}
               <li class="flex gap-1 items-center rounded-full p-1 px-2"
                 class:bg-sky-800={!vote.isFavorite} class:bg-amber-700={vote.isFavorite}>
                 <span >{$userList[voter]?.name || '***'}</span>

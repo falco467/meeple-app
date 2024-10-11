@@ -23,5 +23,5 @@ export function load (errCallback) {
 
 export const userList = {
   subscribe,
-  load
+  load,
 }

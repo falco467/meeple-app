@@ -13,7 +13,7 @@
   export let game
   let errText = ''
   let ownerModalVisible = false
-  /** @type {Game['owners']} */
+  /** @type {NonNullable<Game['owners']>} */
   let ownerMap = {}
 
   const dispatch = createEventDispatcher()
@@ -31,7 +31,8 @@
   function toggleOwner (uid) {
     if (ownerMap[uid] == null) {
       ownerMap[uid] = { created: Date.now() }
-    } else {
+    }
+    else {
       delete ownerMap[uid]
       ownerMap = ownerMap
     }
@@ -40,13 +41,14 @@
   async function saveOwners () {
     errText = ''
     const ol = Object.keys(ownerMap).sort()
-    const gol = Object.keys(game.owners).sort()
+    const gol = Object.keys(game.owners ?? {}).sort()
     if (ol.length === gol.length && ol.every((v, i) => v === gol[i])) {
       return
     }
     try {
       await updateOwners(game.gid, ownerMap)
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
   }
@@ -73,10 +75,10 @@
   <Dialog bind:visible={ownerModalVisible} confirmText="Set Owners" onConfirm={saveOwners}>
     <span>Who owns this game?</span>
     {#each users as user (user.uid)}
-      <button class="flex items-center gap-2 rounded border p-1 pr-2 bg-slate-800"
+    <button class="flex items-center gap-2 rounded border p-1 pr-2 bg-slate-800"
       on:click={() => { toggleOwner(user.uid) }}>
-      <span class:text-opacity-0={ownerMap[user.uid] == null}>
-        <Icon i="check" class="!w-4 !h-4 border"/>
+      <span class="border">
+        <Icon i="check" class="!w-4 !h-4 {ownerMap?.[user.uid] == null ? 'invisible' : ''}"/>
       </span>
       {user.name}
     </button>

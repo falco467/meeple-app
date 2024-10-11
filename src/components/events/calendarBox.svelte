@@ -47,7 +47,7 @@
         dom: d.getDate(),
         isWeekend: d.getDay() === 0 || d.getDay() === 6,
         active: event.days[date] != null || toAddList[date] != null,
-        disabled: event.days[date] != null && readOnly
+        disabled: event.days[date] != null && readOnly,
       })
       d.setDate(d.getDate() + 1)
     }
@@ -68,23 +68,26 @@
       if (d.disabled) return
       if (d.active) {
         delete toAddList[d.date]
-      } else {
+      }
+      else {
         toAddList[d.date] = defaultTime
       }
-    } else if (d.active) {
+    }
+    else if (d.active) {
       delete event.days[d.date]
       event = event
-    } else {
+    }
+    else {
       event.days[d.date] = {
         [defaultTime]: {
           votes: {
             [uid]: {
               isFavorite: false,
-              isHome: false
-            }
+              isHome: false,
+            },
           },
-          created: Date.now()
-        }
+          created: Date.now(),
+        },
       }
     }
     d.active = !d.active
@@ -105,7 +108,7 @@
     }
 
     defaultTime = timeInput
-    return Promise.resolve()
+    await Promise.resolve()
   }
 
   /** @param {string} time */

@@ -28,7 +28,8 @@
     try {
       await removeEvent(eID)
       eventID = null
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
   }
@@ -37,7 +38,8 @@
     try {
       await enableMessaging()
       showNotificationButton = wantMessaging()
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
   }
@@ -81,7 +83,7 @@
   {#if !eventID}
     {#each futureEvents as event (event.id)}
       <div class="flex flex-col" animate:flip={listAnimation}>
-        <EventBox {event} on:open={() => select(event)}/>
+        <EventBox {event} on:open={async () => { await select(event) }}/>
       </div>
     {/each}
 
@@ -99,14 +101,14 @@
 
     {#each pastEvents as event (event.id)}
       <div class="flex flex-col" animate:flip={listAnimation}>
-        <EventBox {event} on:open={() => select(event)}/>
+        <EventBox {event} on:open={async () => { await select(event) }}/>
       </div>
     {/each}
   {:else}
     <div class="flex flex-col" in:scale={{ start: 0.8, duration: 200 }}>
       {#if selectedEvent}
-        <EventDetails event={selectedEvent} on:close={() => select(null)}
-          onRemove={() => tryDeleteEvent(/** @type {NonNullable<typeof selectedEvent>} */(selectedEvent).id)}/>
+        <EventDetails event={selectedEvent} on:close={async () => { await select(null) }}
+          onRemove={async () => { await tryDeleteEvent(/** @type {NonNullable<typeof selectedEvent>} */(selectedEvent).id) }}/>
       {:else if $isLoading}
         <span class="text-center my-10">Loading...</span>
       {:else}
@@ -114,7 +116,7 @@
       {/if}
 
       <button class="flex items-center self-end gap-1 rounded border p-1 px-2 mt-2"
-        on:click={() => select(null)}>
+        on:click={async () => { await select(null) }}>
         <Icon i="arrow-left"/> Back to List
       </button>
 

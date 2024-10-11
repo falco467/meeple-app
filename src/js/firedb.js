@@ -4,26 +4,23 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, on
 import { get, getDatabase, onValue, push, ref, remove, set, update } from 'firebase/database'
 import { getSavedState, saveState } from './helpers.js'
 
- 
 /** @type {ReturnType<initializeApp>} */
- 
 export let app
 /** @type {ReturnType<getAuth>} */
 let auth
 /** @type {ReturnType<getDatabase>} */
 let db
 
-if (!import.meta.env.SSR){
+if (!import.meta.env.SSR) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   app = initializeApp(/** @type {any} */(window).firebaseConfig)
   auth = getAuth(app)
   db = getDatabase(app)
   initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('6Ld5yeIjAAAAAAWy-JqWV4ObHjP5AUAdWsGToDWB'),
-  isTokenAutoRefreshEnabled: true
-})
+    provider: new ReCaptchaV3Provider('6Ld5yeIjAAAAAAWy-JqWV4ObHjP5AUAdWsGToDWB'),
+    isTokenAutoRefreshEnabled: true,
+  })
 }
-
 
 // #region Auth
 
@@ -72,9 +69,10 @@ export async function createAccount (email, password, name) {
 /** @param {(v:UserMap?) => void} listener @param {(err: Error) => void} errCallback */
 export function listenUsers (listener, errCallback) {
   if (import.meta.env.SSR) return () => { /* do nothing */ }
-  return onValue(ref(db, 'users'), snap => { 
+  return onValue(ref(db, 'users'), snap => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    listener(snap.val()) }, errCallback)
+    listener(snap.val())
+  }, errCallback)
 }
 
 /** @param {string} uid @param {string} name */
@@ -86,7 +84,8 @@ export async function setUsername (uid, name) {
 export async function saveMessagingToken (token) {
   try {
     await set(ref(db, `messaging/${uid}/tokens/${token}`), Date.now())
-  } catch (err) {
+  }
+  catch (err) {
     console.error(err)
   }
 }
@@ -103,8 +102,9 @@ export async function saveMessagingToken (token) {
  * @prop {string} players
  * @prop {string} recPlayers
  * @prop {string} rating
- * @prop {{[uid:string]:Vote}?} votes
- * @prop {{[uid:string]:OwnerInfo}?} owners
+ * @prop {{[uid:string]:Vote}} votes - nullable
+ * @prop {{[uid:string]:Vote}} stars - nullable
+ * @prop {{[uid:string]:OwnerInfo}} owners - nullable
  */
 
 /**
@@ -120,9 +120,10 @@ export async function saveMessagingToken (token) {
 /** @param {(v:GameMap?) => void} listener @param {(err: Error) => void} errCallback */
 export function listenGames (listener, errCallback) {
   if (import.meta.env.SSR) return () => { /* do nothing */ }
-  return onValue(ref(db, 'games'), snap => { 
+  return onValue(ref(db, 'games'), snap => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    listener(snap.val()) }, errCallback)
+    listener(snap.val())
+  }, errCallback)
 }
 
 /** @param {Partial<Game>} game */
@@ -146,6 +147,18 @@ export async function removeVote (gid, uid) {
   await remove(ref(db, `games/${gid}/votes/${uid}`))
 }
 
+/** @param {string} gid @param {string} uid */
+export async function addStar (gid, uid) {
+  /** @type Vote */
+  const vote = { created: Date.now() }
+  await set(ref(db, `games/${gid}/stars/${uid}`), vote)
+}
+
+/** @param {string} gid @param {string} uid */
+export async function removeStar (gid, uid) {
+  await remove(ref(db, `games/${gid}/stars/${uid}`))
+}
+
 /** @param {string} gid @param {Game['owners']} owners */
 export async function updateOwners (gid, owners) {
   await set(ref(db, `games/${gid}/owners`), owners)
@@ -164,11 +177,11 @@ export async function updateOwners (gid, owners) {
  * @prop {number} created
  * @prop {string} [selectedDay]
  * @prop {string} [selectedTime]
- * @prop {{[date:string]:EventDay}?} days
+ * @prop {{[date:string]:EventDay}} days - nullable
  * @prop {{[uid:string]:number}} lastVoted
  */
 
-/** @typedef {{[time:string]:{created:number, votes:{[uid:string]:EventVote}?}}} EventDay */
+/** @typedef {{[time:string]:{created:number, votes:{[uid:string]:EventVote}}}} EventDay */
 
 /** @typedef {{isFavorite: boolean, isHome: boolean}} EventVote */
 
@@ -176,7 +189,8 @@ export async function updateOwners (gid, owners) {
 export function listenEvents (listener, errCallback) {
   return onValue(ref(db, 'events'), snap => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    listener(snap.val()) }, errCallback)
+    listener(snap.val())
+  }, errCallback)
 }
 
 /** @param {Event} event */
@@ -192,11 +206,11 @@ export async function removeEvent (id) {
   await remove(ref(db, `events/${id}`))
 }
 
-/** @param {string} id @param {string} day @param {string} time @param {string} uid @param {EventVote?} vote */
-export async function setEventVote (id, day, time, uid, vote) {
-  await update(ref(db, `events/${id}`), {
-    [`days/${day}/${time}/votes/${uid}`]: vote,
-    [`lastVoted/${uid}`]: Date.now()
+/** @param {{id:string, day:string, time:string, uid:string, vote:EventVote?}} v */
+export async function setEventVote (v) {
+  await update(ref(db, `events/${v.id}`), {
+    [`days/${v.day}/${v.time}/votes/${v.uid}`]: v.vote,
+    [`lastVoted/${v.uid}`]: Date.now(),
   })
 }
 
@@ -209,7 +223,7 @@ export async function setEventLastVoted (id, uid) {
 export async function setEventFinalDate (id, day, time) {
   await update(ref(db, `events/${id}`), {
     selectedDay: day,
-    selectedTime: time
+    selectedTime: time,
   })
 }
 
@@ -221,8 +235,8 @@ export async function addEventTimes (id, dayTimes, uid) {
     updates[date] = {
       [time]: {
         created: Date.now(),
-        votes: { [uid]: { isFavorite: false, isHome: false } }
-      }
+        votes: { [uid]: { isFavorite: false, isHome: false } },
+      },
     }
   })
 
@@ -237,3 +251,14 @@ export async function getICalURL () {
 }
 
 // #endregion
+
+/**
+ * @template {object} T
+ * @param {T} o
+ * @param  {...keyof T} keys
+ */
+export function repNulls (o, ...keys) {
+  for (const k of keys) {
+    o[k] ??= /** @type {any} */ ({})
+  }
+}

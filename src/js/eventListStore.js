@@ -1,13 +1,13 @@
 import { writable } from 'svelte/store'
 import { isLoading } from './isLoadingStore.js'
-import { listenEvents } from './firedb.js'
+import { listenEvents, repNulls } from './firedb.js'
 import { getSavedState, saveState, toISODay } from './helpers.js'
 
 /** @typedef {import('./firedb.js').Event} Event */
 
 const storageKey = 'meeple:eventList'
 
-/** @type {Event[]} */ 
+/** @type {Event[]} */
 const gl = getSavedState(storageKey) ?? []
 
 const { set, subscribe } = writable(gl)
@@ -22,14 +22,19 @@ export function load (errCallback) {
     }
     const list = Object.values(eventMap)
     list.forEach(e => {
-      e.days ??= {}
-      Object.values(e.days).forEach(d =>
-        { Object.values(d).forEach(t => { t.votes ??= {} }); })
+      repNulls(e, 'days')
+      Object.values(e.days).forEach(d => {
+        Object.values(d).forEach(t => { repNulls(t, 'votes') })
+      },
+      )
     })
-    list.sort((a, b) => (
-      bToN(isEventOver(a)) - bToN(isEventOver(b))) ||
-      getDay(a).localeCompare(getDay(b)) ||
-      b.created - a.created)
+    list.sort((a, b) => {
+      const diffOver = bToN(isEventOver(a)) - bToN(isEventOver(b))
+      if (diffOver !== 0) return diffOver
+      const diffDay = getDay(a).localeCompare(getDay(b))
+      if (diffDay !== 0) return diffDay
+      return b.created - a.created
+    })
     set(list)
     isLoading.set(false)
     saveState(storageKey, list)
@@ -38,12 +43,12 @@ export function load (errCallback) {
 
 /** @param {Event} event */
 function getDay (event) {
-  return event.selectedDay ?? Object.keys(event.days??{}).sort()[0]
+  return event.selectedDay ?? Object.keys(event.days).sort()[0]
 }
 
 /** @param {Event} event */
 function getLastDay (event) {
-  return event.selectedDay ?? Object.keys(event.days??{}).sort().at(-1) ?? ''
+  return event.selectedDay ?? Object.keys(event.days).sort().at(-1) ?? ''
 }
 
 /** @param {boolean} b */
@@ -59,5 +64,5 @@ export function isEventOver (event) {
 
 export const eventList = {
   subscribe,
-  load
+  load,
 }

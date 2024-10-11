@@ -14,18 +14,23 @@
     name: '',
     days: {},
     lastVoted: {
-      [uid]: Date.now()
-    }
+      [uid]: Date.now(),
+    },
   }
 
   let errText = ''
   let loading = false
 
   let timeModalVisible = false
-  /** @type {typeof event.days['']} */
-  let inputModalDay
+  /** @type {typeof event.days['']?} */
+  let inputModalDay = null
   let timeInputOrgValue = ''
   let timeInput = ''
+
+  const timeMinLen = 2
+  const timeMaxLen = 10
+  const nameMinLen = 4
+  const nameMaxLen = 20
 
   /** @param {typeof event.days['']} day @param {string} time */
   function showTimeInputModal (day, time = '') {
@@ -36,28 +41,27 @@
   }
 
   async function submitTimeInput () {
-    if (timeInput === timeInputOrgValue) {
+    if (timeInput === timeInputOrgValue || inputModalDay == null) {
       return
     }
 
-    if (timeInput.length < 2 || timeInput.length > 10) {
-      throw new Error('Only between 2 and 10 characters allowed')
+    if (timeInput.length < timeMinLen || timeInput.length > timeMaxLen) {
+      throw new Error(`Only between ${timeMinLen} and ${timeMaxLen} characters allowed`)
     }
-
-    console.log(event, timeInputOrgValue, timeInput)
 
     if (timeInputOrgValue !== '') {
       inputModalDay[timeInput] = inputModalDay[timeInputOrgValue]
       delete inputModalDay[timeInputOrgValue]
-    } else {
+    }
+    else {
       inputModalDay[timeInput] = {
         votes: { [uid]: { isFavorite: false, isHome: false } },
-        created: Date.now()
+        created: Date.now(),
       }
     }
 
     event = event
-    return Promise.resolve()
+    await Promise.resolve()
   }
 
   /** @param {typeof event.days['']} day @param {string} time */
@@ -71,8 +75,8 @@
     errText = ''
     loading = true
     try {
-      if (event.name.length < 4) {
-        throw new Error('Event Name must at least have 4 characters')
+      if (event.name.length < nameMinLen || event.name.length > nameMaxLen) {
+        throw new Error(`Event Name must have between ${nameMinLen} and ${nameMaxLen} characters`)
       }
       const days = Object.keys(event.days)
       if (days.length === 0) {
@@ -87,7 +91,8 @@
       }
       await addEvent(event)
       customDispatch(e, 'close')
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
     loading = false
@@ -97,7 +102,7 @@
 <div class="flex flex-col gap-5 items-stretch mt-5">
   <!-- svelte-ignore a11y-autofocus -->
   <input bind:value={event.name} type="text" placeholder="event name" autofocus
-    required minlength="4" maxlength="30" class="bg-slate-500 rounded p-2"/>
+    required minlength={nameMinLen} maxlength={nameMaxLen} class="bg-slate-500 rounded p-2"/>
 
   <CalendarBox bind:event />
 
@@ -119,6 +124,6 @@
   </div>
 
   <InputModal bind:value={timeInput} bind:visible={timeModalVisible} onConfirm={submitTimeInput}
-    label="Change time" confirmText="Set time" minlength={2} maxlength={12} />
+    label="Change time" confirmText="Set time" minlength={timeMinLen} maxlength={timeMaxLen} />
 
 </div>

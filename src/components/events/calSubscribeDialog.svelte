@@ -17,7 +17,8 @@
       const url = await getICalURL()
       if (url == null) throw new Error('calendar is currently not available.')
       icalURL = url
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
     isLoading = false
@@ -27,7 +28,8 @@
     try {
       await navigator.clipboard.writeText(icalURL)
       okText = 'URL copied to clipboard'
-    } catch (err) {
+    }
+    catch (err) {
       errText = getErrorMessage(err)
     }
   }

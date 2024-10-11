@@ -6,10 +6,12 @@ const functions = /** @type {ReturnType<getFunctions>} */ (import.meta.env.SSR |
 /** @typedef {{name?: string, id?: string}} BggCallRequest */
 /** @typedef {{ok: boolean, status: number, text: string}} BggCallResult */
 
-const bggSearchGameFunc = /** @type {(r:BggCallRequest) => Promise<{data:BggCallResult}>} */
-  (import.meta.env.SSR || httpsCallable(functions, 'bggSearch'))
+const bggSearchGameFunc
+= /** @type {(r:BggCallRequest) => Promise<{data:BggCallResult}>} */ (import.meta.env.SSR || httpsCallable(functions, 'bggSearch'))
 
 /** @typedef {{id: string, name: string, year: string}} SearchResult */
+
+const searchReturnCount = 10
 
 /** @param {string} name @returns {Promise<SearchResult[]>} */
 export async function bggSearchGame (name) {
@@ -24,10 +26,10 @@ export async function bggSearchGame (name) {
     id: node.id,
     type: node.getAttribute('type'),
     name: node.querySelector('name')?.getAttribute('value') ?? '',
-    year: node.querySelector('yearpublished')?.getAttribute('value') ?? ''
+    year: node.querySelector('yearpublished')?.getAttribute('value') ?? '',
   }))
 
-  list = list.filter(b => !(b.type === 'boardgameexpansion' || list.find(x => b.id === x.id && x.type === 'boardgameexpansion')))
+  list = list.filter(b => !(b.type === 'boardgameexpansion' || list.find(x => b.id === x.id && x.type === 'boardgameexpansion') != null))
 
   list.sort((a, b) => {
     const aMatch = a.name.toLowerCase().includes(name.toLowerCase())
@@ -36,7 +38,7 @@ export async function bggSearchGame (name) {
     return getSortString(a).localeCompare(getSortString(b))
   })
 
-  return list.slice(0, 10)
+  return list.slice(0, searchReturnCount)
 }
 
 /** @param {string} id @returns {Promise<import('./firedb.js').Game>} */
@@ -58,7 +60,8 @@ export async function bggLoadGame (id) {
     rating: parseFloat(getValue(it, 'average')).toFixed(1),
     recPlayers: calculateRecommendedPlayers(it),
     votes: {},
-    owners: {}
+    owners: {},
+    stars: {},
   }
 }
 /** @param {Element?} it */
@@ -69,23 +72,30 @@ function calculateRecommendedPlayers (it) {
       num: n.getAttribute('numplayers') ?? '',
       best: getVoteCount(n, 'Best'),
       rec: getVoteCount(n, 'Recommended'),
-      not: getVoteCount(n, 'Not Recommended')
+      not: getVoteCount(n, 'Not Recommended'),
     }))
 
   /** @type {string[]} */
   const recPlayerList = []
-  npRatings.forEach(r => (r.best > r.not || (r.best + r.rec) > 3 * r.not) && recPlayerList.push(r.num))
+  const goodPlayercountFactor = 3
+  npRatings.forEach(r => {
+    if (r.best > r.not || (r.best + r.rec) > goodPlayercountFactor * r.not) {
+      recPlayerList.push(r.num)
+    }
+  })
   recPlayerList.sort()
 
   let recPlayers = ''
   let lastN = ''
   let span = false
   for (const n of recPlayerList) {
-    if (!recPlayers) {
+    if (recPlayers === '') {
       recPlayers = n
-    } else if (parseInt(n) === parseInt(lastN) + 1 || n === `${lastN}+`) {
+    }
+    else if (parseInt(n) === parseInt(lastN) + 1 || n === `${lastN}+`) {
       span = true
-    } else {
+    }
+    else {
       recPlayers += span ? `-${lastN},${n}` : `,${n}`
       span = false
     }
@@ -99,8 +109,8 @@ function calculateRecommendedPlayers (it) {
 
 /** @param {Element?} node @param {string} name */
 function getVoteCount (node, name) {
-  const vt = node?.querySelector(`result[value="${name}"]`)?.getAttribute('numvotes')
-  return vt ? parseInt(vt) : 0
+  const vt = node?.querySelector(`result[value="${name}"]`)?.getAttribute('numvotes') ?? ''
+  return vt !== '' ? parseInt(vt) : 0
 }
 
 /** @param {Element?} it @param {string} tag */
@@ -110,5 +120,7 @@ function getValue (it, tag) {
 
 /** @param {{id: string, name: string, year: string}} r */
 function getSortString (r) {
-  return `${String(r.name.length).padStart(2, '0')}${10000 - parseInt(r.year)}  ${r.name}`
+  const nameLengthPadding = 2
+  const yearReverseNum = 10000
+  return `${String(r.name.length).padStart(nameLengthPadding, '0')} ${yearReverseNum - parseInt(r.year)}  ${r.name}`
 }
