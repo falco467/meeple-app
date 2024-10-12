@@ -31,7 +31,7 @@ export async function initMessaging () {
 }
 
 export function wantMessaging () {
-  if (import.meta.env.SSR) return false
+  if (import.meta.env.SSR || !('Notification' in window)) return false
   return window.Notification.permission !== 'granted'
 }
 

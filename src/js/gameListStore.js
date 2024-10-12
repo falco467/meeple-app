@@ -49,12 +49,11 @@ export function load (errCallback) {
   }, errCallback)
 }
 
-const starRatingWeight = 2
-
-/** @param {Game} game */
-function countVotes (game) {
-  return Object.keys(game.stars).length * starRatingWeight
-    + Object.keys(game.votes).length
+/** @param {Game} game @param {Set<string>?} onlyUsers  */
+export function countVotes (game, onlyUsers = null) {
+  const votes = Object.keys(game.votes).filter(u => onlyUsers == null || onlyUsers.has(u))
+  const stars = Object.keys(game.stars).filter(u => onlyUsers == null || onlyUsers.has(u))
+  return stars.length + votes.length
 }
 
 export const gameList = {

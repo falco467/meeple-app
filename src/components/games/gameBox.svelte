@@ -64,6 +64,16 @@
       errText = getErrorMessage(err)
     }
   }
+
+  /** @param {Game} game */
+  function getOwnersAndVotes (game) {
+    const owners = Object.entries(game.owners)
+    owners.sort(([_a, a], [_b, b]) => a.created - b.created)
+    const votes = Object.entries(game.votes)
+      .filter(([uid]) => owners.find(([ouid]) => uid === ouid) == null)
+    votes.sort(([, a], [, b]) => a.created - b.created)
+    return [...owners, ...votes].map(([uid, _]) => uid)
+  }
 </script>
 
 <article class="flex gap-2 bg-slate-800 rounded p-2 outline-amber-900"
@@ -83,7 +93,7 @@
     {#if errText}<span class="text-red-500">{errText}</span>{/if}
 
     <ul class="flex gap-2 flex-wrap text-xs items-start">
-      {#each Object.keys({ ...game.owners, ...game.votes }) as uid (uid)}
+      {#each getOwnersAndVotes(game) as uid (uid)}
       <li class="flex gap-1 items-center rounded-full p-1 px-2"
         class:bg-sky-800={game.votes[uid] && !game.stars[uid]}
         class:bg-amber-900={game.stars[uid]}

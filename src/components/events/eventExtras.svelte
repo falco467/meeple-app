@@ -1,7 +1,7 @@
 <script>
   import { onDestroy } from 'svelte'
   import { flip } from 'svelte/animate'
-  import { gameList } from '../../js/gameListStore.js'
+  import { countVotes, gameList } from '../../js/gameListStore.js'
   import { fitsPlayerCount, getErrorMessage, listAnimation } from '../../js/helpers.js'
   import GameBox from '../games/gameBox.svelte'
   import { isEventOver } from '../../js/eventListStore.js'
@@ -29,19 +29,18 @@
   /** @param {import('../../js/firedb.js').Game[]} gl @param {Event} event @param {boolean} matchPC  */
   function getRecommendedList (gl, event, matchPC) {
     const ps = getParticipants(event)
-    gl = gl.filter(g =>
-      Object.keys(g.owners ?? {}).some(o => ps.has(o)) && (!matchPC || fitsPlayerCount(g, ps.size)))
-    gl.sort((a, b) =>
-      (countVotes(b, ps) - countVotes(a, ps))
-      || b.rating.localeCompare(a.rating)
-      || b.gid.localeCompare(a.gid),
-    )
-    return gl
-  }
 
-  /** @param {import('../../js/firedb.js').Game} game @param {Set<string>} uids */
-  function countVotes (game, uids) {
-    return Object.keys(game.votes ?? {}).filter(v => uids.has(v)).length
+    gl = gl.filter(g => Object.keys(g.owners).some(o => ps.has(o))
+      && (!matchPC || fitsPlayerCount(g, ps.size)))
+
+    gl.sort((a, b) => {
+      const voteDiff = countVotes(b, ps) - countVotes(a, ps)
+      if (voteDiff !== 0) return voteDiff
+      const ratingDiff = b.rating.localeCompare(a.rating)
+      if (ratingDiff !== 0) return ratingDiff
+      return b.gid.localeCompare(a.gid)
+    })
+    return gl
   }
 
   const unsubGame = gameList.load(err => { errText = getErrorMessage(err) })
